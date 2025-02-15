@@ -1,6 +1,7 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
@@ -38,7 +39,12 @@ public class UserController {
 
     @GetMapping(USER_URI_ID)
     public ResponseEntity<UserDto> getUserById(@PathVariable("id") UUID id) {
-        return userService.getUserDtoById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        if(userService.getUserDtoById(id).isEmpty()){
+            throw new NotFoundException("User with id " + id + " not found");
+        }
+        else{
+            return new ResponseEntity<>(userService.getUserDtoById(id).get(), HttpStatus.OK);
+        }
     }
 
     @PostMapping(USER_URI)

@@ -2,7 +2,7 @@ package com.carnasa.cr.projectkingdomwebpage.controllers;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostReply;
-import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostReplyDto;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 public class DevLogPostController {
@@ -61,7 +60,7 @@ public class DevLogPostController {
         List<DevLogPostDto> devLogPosts = devLogPostService
                 .getDevLogPosts(page, pageSize, categoryName, search, startDate, endDate, isPopular, username).getContent();
         if(devLogPosts.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new NotFoundException("No posts found with search parameters");
         }
         return new ResponseEntity<>(devLogPosts, HttpStatus.OK);
     }
