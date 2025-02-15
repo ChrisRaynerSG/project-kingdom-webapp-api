@@ -1,16 +1,19 @@
 package com.carnasa.cr.projectkingdomwebpage.services.impl;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.*;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.UserDetailsAlreadyExistException;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
 import com.carnasa.cr.projectkingdomwebpage.repositories.specifications.UserSpecification;
 import com.carnasa.cr.projectkingdomwebpage.repositories.user.*;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
 import com.carnasa.cr.projectkingdomwebpage.utils.ServiceUtils;
 import com.carnasa.cr.projectkingdomwebpage.utils.UserUtils;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -102,24 +105,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserEntity saveUser(UserEntity user) {
+    public UserEntity saveUser(UserPostDto userDto) {
 
-        validateNewUser(user);
+        try {
 
-        user.setCreatedAt(LocalDateTime.now());
-        user.setLastModified(LocalDateTime.now());
-        user.setActive(true);
+            if (!userDto.getPassword().equals(userDto.getConfirmPassword())) {
+                throw new BadRequestException("Passwords don't match");
+            }
 
-        user.getRoles().add("ROLE_USER");
+            //@todo validate password strength here.
 
-        user.setEmail(user.getEmail().toLowerCase());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+            UserEntity user = new UserEntity();
+            user.setUsername(userDto.getUsername());
+            user.setEmail(userDto.getEmail().toLowerCase());
+            user.setPassword(userDto.getPassword());
 
-        UserEntity savedUser = userEntityRepository.save(user);
-        userEntityRepository.flush();
+            validateNewUser(user);
 
-        createNewUserExtra(savedUser);
-        return savedUser;
+            user.setCreatedAt(LocalDateTime.now());
+            user.setLastModified(LocalDateTime.now());
+            user.setActive(true);
+
+            user.getRoles().add("ROLE_USER");
+
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+            UserEntity savedUser = userEntityRepository.save(user);
+            userEntityRepository.flush();
+
+            createNewUserExtra(savedUser);
+            return savedUser;
+        }
+        catch (ConstraintViolationException e){
+            throw new BadRequestException("INVALID EMAIL: " + userDto.getEmail().toLowerCase() + " Please enter a valid email address");
+        }
     }
 
     @Override
@@ -231,7 +250,7 @@ public class UserServiceImpl implements UserService {
             throw new UserDetailsAlreadyExistException("Username: " + userEntity.getUsername() + " already in use.");
         }
         if(getUserByEmail(userEntity.getEmail()).isPresent()){
-            throw new UserDetailsAlreadyExistException("Email: " + userEntity.getEmail() + " already in use.");
+            throw new UserDetailsAlreadyExistException("Email: " + userEntity.getEmail().toLowerCase() + " already in use.");
         }
         //then validate fields to make sure they are acceptable to be saved
         //@Todo remove todos

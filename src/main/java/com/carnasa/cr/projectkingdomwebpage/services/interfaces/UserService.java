@@ -3,6 +3,7 @@ package com.carnasa.cr.projectkingdomwebpage.services.interfaces;
 import com.carnasa.cr.projectkingdomwebpage.entities.user.*;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public interface UserService {
                                  Boolean active);
 
     //Create Methods
-    UserEntity saveUser(UserEntity user);
+    UserEntity saveUser(UserPostDto user);
 
     //Update Methods
     UserEntity updateUser(UserPatchDto userPatchDto, UUID userId);

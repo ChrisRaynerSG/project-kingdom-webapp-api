@@ -3,6 +3,7 @@ package com.carnasa.cr.projectkingdomwebpage.controllers;
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
 import com.carnasa.cr.projectkingdomwebpage.utils.UserUtils;
 import jakarta.validation.Valid;
@@ -41,12 +42,12 @@ public class UserController {
     }
 
     @PostMapping(USER_URI)
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserEntity userEntity, BindingResult bindingResult) {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserPostDto userCredentials, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         else{
-            UserDto user = UserUtils.toDto(userService.saveUser(userEntity));
+            UserDto user = UserUtils.toDto(userService.saveUser(userCredentials));
             return new ResponseEntity<>(user, HttpStatus.CREATED);
         }
     }
