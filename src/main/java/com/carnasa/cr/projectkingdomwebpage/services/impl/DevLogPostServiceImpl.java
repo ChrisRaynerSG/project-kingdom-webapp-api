@@ -4,10 +4,7 @@ import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostCategory;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostReply;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostPatchDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostPostDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostReplyDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.*;
 import com.carnasa.cr.projectkingdomwebpage.repositories.devlog.*;
 import com.carnasa.cr.projectkingdomwebpage.repositories.specifications.DevLogPostSpecification;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
@@ -99,20 +96,23 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         return savedPost;
     }
 
-    public DevLogPostReply createDevLogPostReply(DevLogPostReply devLogPostReply) {
+    public DevLogPostReply createDevLogPostReply(DevLogPostReplyPostDto replyDto, Long postId) {
+
+        DevLogPostReply devLogPostReply = new DevLogPostReply();
+        devLogPostReply.setMessage(replyDto.getMessage());
 
         //properly set the relationships
-        if(getDevLogPostById(devLogPostReply.getPost().getId()).isEmpty()) {
-            throw new BadRequestException("Post with ID: " + devLogPostReply.getPost().getId() + " does not exist");
+        if(getDevLogPostById(postId).isEmpty()) {
+            throw new BadRequestException("Post with ID: " + postId + " does not exist");
         }
         else {
-            devLogPostReply.setPost(getDevLogPostById(devLogPostReply.getPost().getId()).get());
+            devLogPostReply.setPost(getDevLogPostById(postId).get());
         }
-        if(userService.getUserById(devLogPostReply.getUser().getId()).isEmpty()) {
+        if(userService.getUserById(replyDto.getUserId()).isEmpty()) {
             throw new BadRequestException("Unable to create post as user information unable to be retrieved");
         }
         else{
-            devLogPostReply.setUser(userService.getUserById(devLogPostReply.getUser().getId()).get());
+            devLogPostReply.setUser(userService.getUserById(replyDto.getUserId()).get());
         }
 
         devLogPostReply.setActive(true);

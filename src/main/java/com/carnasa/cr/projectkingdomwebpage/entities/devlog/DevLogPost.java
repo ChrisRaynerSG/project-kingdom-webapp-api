@@ -45,7 +45,7 @@ public class DevLogPost {
     @OneToMany
     private List<DevLogPostLike> likes = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DevLogPostReply> replies = new ArrayList<>();
 
     public Long getId() {

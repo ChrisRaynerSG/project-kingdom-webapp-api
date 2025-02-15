@@ -27,6 +27,10 @@ public class DevLogPostReplyLike {
     @Column(name="created_at")
     private LocalDateTime created;
 
+    @ManyToOne
+    @JoinColumn(name = "dev_log_post_reply_id")
+    private DevLogPostReply reply;
+
     public Long getId() {
         return id;
     }
@@ -65,5 +69,13 @@ public class DevLogPostReplyLike {
 
     public void setCreated(LocalDateTime created) {
         this.created = created;
+    }
+
+    public DevLogPostReply getReply() {
+        return reply;
+    }
+
+    public void setReply(DevLogPostReply reply) {
+        this.reply = reply;
     }
 }

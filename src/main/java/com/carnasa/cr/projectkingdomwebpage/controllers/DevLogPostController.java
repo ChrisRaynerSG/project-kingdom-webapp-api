@@ -6,6 +6,7 @@ import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostReplyDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostReplyPostDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +43,8 @@ public class DevLogPostController {
 
     @PostMapping(DEV_LOG_POST_REPLY_URL)
     public ResponseEntity<DevLogPostReplyDto> postDevLogPostReply(@PathVariable Long id,
-                                                                  @RequestBody DevLogPostReply devlogPostReply) {
-        if(!Objects.equals(id, devlogPostReply.getPost().getId())) {
-            throw new BadRequestException("Post reply ID does not match Post ID");
-        }
-        DevLogPostReply savedReply = devLogPostService.createDevLogPostReply(devlogPostReply);
+                                                                  @RequestBody DevLogPostReplyPostDto postReply) {
+        DevLogPostReply savedReply = devLogPostService.createDevLogPostReply(postReply, id);
         return new ResponseEntity<>(DevLogUtils.replyToDto(savedReply), HttpStatus.CREATED);
     }
 }

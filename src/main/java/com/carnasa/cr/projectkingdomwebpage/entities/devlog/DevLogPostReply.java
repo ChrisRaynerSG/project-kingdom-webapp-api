@@ -4,6 +4,7 @@ import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -38,8 +39,8 @@ public class DevLogPostReply {
     @Column(name = "is_updated")
     private Boolean isUpdated = false;
 
-    @OneToMany
-    private List<DevLogPostReplyLike> likes;
+    @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DevLogPostReplyLike> likes = new ArrayList<>();
 
     public Long getId() {
         return id;
