@@ -33,7 +33,7 @@ public class UserController {
                                                      @RequestParam(required= false) Integer pageNumber,
                                                      @RequestParam(required = false) String usernameContains,
                                                      @RequestParam(required = false) Boolean isActive) {
-        return new ResponseEntity(userService.getAllUsers(pageSize,pageNumber, usernameContains, isActive).getContent(),HttpStatus.OK);
+        return new ResponseEntity<>(userService.getAllUsers(pageSize,pageNumber, usernameContains, isActive).getContent(),HttpStatus.OK);
     }
 
     @GetMapping(USER_URI_ID)

@@ -153,13 +153,14 @@ public class DevLogPostServiceImpl implements DevLogPostService {
      * @param username
      * @return A page of DevLogPostDtos
      */
+    @Override
     public Page<DevLogPostDto> getDevLogPosts(Integer page, Integer size, String category, String search, LocalDateTime startDate, LocalDateTime endDate, Boolean isPopular, String username) {
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
         Specification<DevLogPost> spec = Specification
                 .where(DevLogPostSpecification.getPostsByCategory(category))
                 .and(DevLogPostSpecification.getPostsBySearch(search))
                 .and(DevLogPostSpecification.getPostBetweenDates(startDate, endDate))
-                .and(DevLogPostSpecification.getPostByPopularity(isPopular))
+                .and(DevLogPostSpecification.getPostByPopularity(isPopular, startDate, endDate))
                 .and(DevLogPostSpecification.getPostsByUserUsername(username));
 
         return devLogPostRepository.findAll(spec, pageRequest).map(DevLogUtils::toDto);

@@ -34,7 +34,7 @@ public class DevLogPostSpecification {
             return null;
         }
         return (root, query, criteriaBuilder) -> {
-            root.fetch("devLogPostCategory", JoinType.LEFT);
+            root.join("devLogPostCategory", JoinType.LEFT);
             return criteriaBuilder.equal(root.get("devLogPostCategory").get("category"), category);
         };
     }
@@ -42,7 +42,7 @@ public class DevLogPostSpecification {
     public static Specification<DevLogPost> getPostsByUserUsername(String username) {
         if(username != null) {
             return(root, query, criteriaBuilder) -> {
-                root.fetch("creator", JoinType.LEFT);
+                root.join("creator", JoinType.LEFT);
                 return criteriaBuilder.equal(root.get("creator").get("username"), username);
             };
         }
@@ -60,16 +60,29 @@ public class DevLogPostSpecification {
                 criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), endDate)
         );
     }
-    public static Specification<DevLogPost> getPostByPopularity(Boolean isPopularSelected){
-        if(isPopularSelected == null || !isPopularSelected) {
+    public static Specification<DevLogPost> getPostByPopularity(Boolean isPopular, LocalDateTime startDate, LocalDateTime endDate) {
+
+        if(isPopular == null || !isPopular) {
             return null;
         }
-        return (root, criteriaQuery, criteriaBuilder) -> {
+        if (startDate == null || endDate == null) {
+            return null;
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new BadRequestException("Start date cannot be after end date.");
+        }
 
+        return (root, query, criteriaBuilder) -> {
             Join<DevLogPost, DevLogPostLike> likesJoin = root.join("likes", JoinType.LEFT);
+
+            Predicate likesWithinPeriod = criteriaBuilder.between(likesJoin.get("createdAt"), startDate, endDate);
+
             Expression<Long> likesCount = criteriaBuilder.count(likesJoin);
-            criteriaQuery.orderBy(criteriaBuilder.desc(likesCount));
-            return criteriaBuilder.conjunction();
+
+            query.groupBy(root.get("id"));
+            query.orderBy(criteriaBuilder.desc(likesCount));
+
+            return likesWithinPeriod;
         };
     }
 }

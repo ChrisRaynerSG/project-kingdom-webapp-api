@@ -12,11 +12,10 @@ import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -46,5 +45,24 @@ public class DevLogPostController {
                                                                   @RequestBody DevLogPostReplyPostDto postReply) {
         DevLogPostReply savedReply = devLogPostService.createDevLogPostReply(postReply, id);
         return new ResponseEntity<>(DevLogUtils.replyToDto(savedReply), HttpStatus.CREATED);
+    }
+
+    @GetMapping(DEV_LOG_POST_URL)
+    public ResponseEntity<List<DevLogPostDto>> getDevLogPosts(
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDateTime endDate,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Boolean isPopular,
+            @RequestParam(required = false) String categoryName
+    ) {
+        List<DevLogPostDto> devLogPosts = devLogPostService
+                .getDevLogPosts(page, pageSize, categoryName, search, startDate, endDate, isPopular, username).getContent();
+        if(devLogPosts.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(devLogPosts, HttpStatus.OK);
     }
 }
