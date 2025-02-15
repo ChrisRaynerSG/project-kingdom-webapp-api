@@ -3,6 +3,7 @@ package com.carnasa.cr.projectkingdomwebpage.repositories.specifications;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostLike;
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;

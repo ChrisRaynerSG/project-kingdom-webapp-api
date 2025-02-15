@@ -22,4 +22,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("NOT_FOUND", ex.getMessage(), request.getRequestURL().toString()), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(Exception ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse("BAD_REQUEST", ex.getMessage(), request.getRequestURL().toString()), HttpStatus.BAD_REQUEST);
+    }
+
 }
