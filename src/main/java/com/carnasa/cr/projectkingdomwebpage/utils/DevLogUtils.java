@@ -1,14 +1,14 @@
 package com.carnasa.cr.projectkingdomwebpage.utils;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevlogPostDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevlogPostReplyDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostReplyDto;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostReply;
 
-public class DevlogUtils {
+public class DevLogUtils {
 
-    public static DevlogPostDto toDto(DevLogPost devLogPost) {
-        return new DevlogPostDto(
+    public static DevLogPostDto toDto(DevLogPost devLogPost) {
+        return new DevLogPostDto(
                 devLogPost
                         .getId(),
                 devLogPost
@@ -28,18 +28,18 @@ public class DevlogUtils {
                 devLogPost
                         .getLikes()
                         .size(),
-                devLogPost
-                        .getReplies()
-                        .stream()
-                        .map(DevlogUtils::replyToDto)
-                        .toList(),
+                !devLogPost
+                        .getReplies().isEmpty() ?
+                        devLogPost.getReplies().stream()
+                        .map(DevLogUtils::replyToDto)
+                        .toList() : null,
                 devLogPost
                         .getUpdated()
         );
     }
 
-    public static DevlogPostReplyDto replyToDto(DevLogPostReply devLogPostReply){
-        return new DevlogPostReplyDto(
+    public static DevLogPostReplyDto replyToDto(DevLogPostReply devLogPostReply){
+        return new DevLogPostReplyDto(
                 devLogPostReply.getId(),
                 devLogPostReply.getMessage(),
                 devLogPostReply.getUser().getUsername(),

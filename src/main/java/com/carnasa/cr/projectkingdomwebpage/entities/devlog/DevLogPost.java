@@ -25,12 +25,12 @@ public class DevLogPost {
     @Column(name = "message", nullable = false)
     private String message;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity creator;
 
     @Column(name="created_at", nullable = false)
-    private LocalDateTime creationDate;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "dev_log_post_category_id", nullable = false)
@@ -89,11 +89,11 @@ public class DevLogPost {
     }
 
     public LocalDateTime getCreationDate() {
-        return creationDate;
+        return createdAt;
     }
 
     public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
+        this.createdAt = creationDate;
     }
 
     public DevLogPostCategory getDevLogPostCategory() {

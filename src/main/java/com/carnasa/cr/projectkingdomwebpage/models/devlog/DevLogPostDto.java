@@ -1,10 +1,9 @@
 package com.carnasa.cr.projectkingdomwebpage.models.devlog;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-public class DevlogPostDto {
+public class DevLogPostDto {
     private Long id;
     private String category;
     private String title;
@@ -13,10 +12,10 @@ public class DevlogPostDto {
     private LocalDateTime createdAt;
     private LocalDateTime lastModified;
     private Integer likes;
-    private List<DevlogPostReplyDto> replies;
+    private List<DevLogPostReplyDto> replies;
     private Boolean isUpdated;
 
-    public DevlogPostDto(
+    public DevLogPostDto(
             Long id,
             String category,
             String title,
@@ -25,7 +24,7 @@ public class DevlogPostDto {
             LocalDateTime createdAt,
             LocalDateTime lastModified,
             Integer likes,
-            List<DevlogPostReplyDto> replies,
+            List<DevLogPostReplyDto> replies,
             Boolean isUpdated
 
                          ) {
@@ -105,11 +104,11 @@ public class DevlogPostDto {
         this.likes = likes;
     }
 
-    public List<DevlogPostReplyDto> getReplies() {
+    public List<DevLogPostReplyDto> getReplies() {
         return replies;
     }
 
-    public void setReplies(List<DevlogPostReplyDto> replies) {
+    public void setReplies(List<DevLogPostReplyDto> replies) {
         this.replies = replies;
     }
 

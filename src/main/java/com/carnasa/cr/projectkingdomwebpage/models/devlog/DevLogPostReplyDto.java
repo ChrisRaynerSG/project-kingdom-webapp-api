@@ -2,7 +2,7 @@ package com.carnasa.cr.projectkingdomwebpage.models.devlog;
 
 import java.time.LocalDateTime;
 
-public class DevlogPostReplyDto {
+public class DevLogPostReplyDto {
     private Long id;
     private String message;
     private String author;
@@ -11,7 +11,7 @@ public class DevlogPostReplyDto {
     private Boolean isUpdated;
     private Integer likes;
 
-    public DevlogPostReplyDto(
+    public DevLogPostReplyDto(
             Long id,
             String message,
             String author,

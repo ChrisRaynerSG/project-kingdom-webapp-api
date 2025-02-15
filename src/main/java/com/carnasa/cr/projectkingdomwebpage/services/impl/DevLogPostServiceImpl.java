@@ -2,12 +2,17 @@ package com.carnasa.cr.projectkingdomwebpage.services.impl;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostCategory;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevlogPostDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevlogPostReplyDto;
+import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostReply;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostPatchDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.DevLogPostReplyDto;
 import com.carnasa.cr.projectkingdomwebpage.repositories.devlog.*;
 import com.carnasa.cr.projectkingdomwebpage.repositories.specifications.DevLogPostSpecification;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
-import com.carnasa.cr.projectkingdomwebpage.utils.DevlogUtils;
+import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
+import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
 import com.carnasa.cr.projectkingdomwebpage.utils.ServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +26,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This class serves as the implementation for the service layer for any actions relating to DevLogs
+ *
+ */
 @Service
 public class DevLogPostServiceImpl implements DevLogPostService {
 
@@ -31,22 +40,88 @@ public class DevLogPostServiceImpl implements DevLogPostService {
     private final DevLogPostLikeRepository devLogPostLikeRepository;
     private final DevLogPostReplyRepository devLogPostReplyRepository;
     private final DevLogPostReplyLikeRepository devLogPostReplyLikeRepository;
+    private final UserService userService;
+
+    /**
+     * Constructor for DevLogServiceImpl
+     * @param devLogPostRepository
+     * @param devLogPostCategoryRepository
+     * @param devLogPostLikeRepository
+     * @param devLogPostReplyRepository
+     * @param devLogPostReplyLikeRepository
+     * @param userService
+     */
 
     @Autowired
     public DevLogPostServiceImpl(DevLogPostRepository devLogPostRepository,
                                  DevLogPostCategoryRepository devLogPostCategoryRepository,
                                  DevLogPostLikeRepository devLogPostLikeRepository,
                                  DevLogPostReplyRepository devLogPostReplyRepository,
-                                 DevLogPostReplyLikeRepository devLogPostReplyLikeRepository) {
+                                 DevLogPostReplyLikeRepository devLogPostReplyLikeRepository,
+                                 UserService userService) {
 
         this.devLogPostRepository = devLogPostRepository;
         this.devLogPostCategoryRepository = devLogPostCategoryRepository;
         this.devLogPostLikeRepository = devLogPostLikeRepository;
         this.devLogPostReplyRepository = devLogPostReplyRepository;
         this.devLogPostReplyLikeRepository = devLogPostReplyLikeRepository;
+        this.userService = userService;
     }
 
     //Create Methods
+    @Override
+    public DevLogPost createDevLogPost(DevLogPostPostDto devLogPostPostDto) {
+
+        DevLogPost devLogPost = new DevLogPost();
+
+        // validation for title and message content
+
+        // validate dto components
+        if(getDevLogPostCategoryById(devLogPostPostDto.getCategoryId()).isPresent()) {
+            devLogPost.setDevLogPostCategory(getDevLogPostCategoryById(devLogPostPostDto.getCategoryId()).get());
+        }
+        if(userService.getUserById(devLogPostPostDto.getUserId()).isPresent()) {
+            devLogPost.setCreator(userService.getUserById(devLogPostPostDto.getUserId()).get());
+        }
+        else{
+            throw new BadRequestException("Unable to create post as user information unable to be retrieved");
+        }
+
+        devLogPost.setMessage(devLogPostPostDto.getMessage());
+        devLogPost.setTitle(devLogPostPostDto.getTitle());
+        devLogPost.setCreationDate(LocalDateTime.now());
+        devLogPost.setLastModified(LocalDateTime.now());
+
+        devLogPost.setActive(true);
+
+        DevLogPost savedPost = devLogPostRepository.save(devLogPost);
+        devLogPostRepository.flush();
+        return savedPost;
+    }
+
+    public DevLogPostReply createDevLogPostReply(DevLogPostReply devLogPostReply) {
+
+        //properly set the relationships
+        if(getDevLogPostById(devLogPostReply.getPost().getId()).isEmpty()) {
+            throw new BadRequestException("Post with ID: " + devLogPostReply.getPost().getId() + " does not exist");
+        }
+        else {
+            devLogPostReply.setPost(getDevLogPostById(devLogPostReply.getPost().getId()).get());
+        }
+        if(userService.getUserById(devLogPostReply.getUser().getId()).isEmpty()) {
+            throw new BadRequestException("Unable to create post as user information unable to be retrieved");
+        }
+        else{
+            devLogPostReply.setUser(userService.getUserById(devLogPostReply.getUser().getId()).get());
+        }
+
+        devLogPostReply.setActive(true);
+        devLogPostReply.setCreatedAt(LocalDateTime.now());
+        devLogPostReply.setLastModified(LocalDateTime.now());
+        devLogPostReply.setUpdated(false);
+
+        return devLogPostReplyRepository.save(devLogPostReply);
+    }
 
 
     //Read Methods
@@ -56,6 +131,10 @@ public class DevLogPostServiceImpl implements DevLogPostService {
      */
     public List<DevLogPostCategory> getDevLogPostCategories() {
         return devLogPostCategoryRepository.findAll();
+    }
+
+    public Optional<DevLogPostCategory> getDevLogPostCategoryById(Long id) {
+        return devLogPostCategoryRepository.findById(id);
     }
 
     public Optional<DevLogPost> getDevLogPostById(Long id) {
@@ -74,7 +153,7 @@ public class DevLogPostServiceImpl implements DevLogPostService {
      * @param username
      * @return A page of DevLogPostDtos
      */
-    public Page<DevlogPostDto> getDevLogPosts(Integer page, Integer size, String category, String search, LocalDateTime startDate, LocalDateTime endDate, Boolean isPopular, String username) {
+    public Page<DevLogPostDto> getDevLogPosts(Integer page, Integer size, String category, String search, LocalDateTime startDate, LocalDateTime endDate, Boolean isPopular, String username) {
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
         Specification<DevLogPost> spec = Specification
                 .where(DevLogPostSpecification.getPostsByCategory(category))
@@ -83,7 +162,7 @@ public class DevLogPostServiceImpl implements DevLogPostService {
                 .and(DevLogPostSpecification.getPostByPopularity(isPopular))
                 .and(DevLogPostSpecification.getPostsByUserUsername(username));
 
-        return devLogPostRepository.findAll(spec, pageRequest).map(DevlogUtils::toDto);
+        return devLogPostRepository.findAll(spec, pageRequest).map(DevLogUtils::toDto);
     }
 
     /**
@@ -95,15 +174,21 @@ public class DevLogPostServiceImpl implements DevLogPostService {
      * @return
      */
 
-    public Page<DevlogPostReplyDto> getDevLogPostReplies(Integer page, Integer size, Long postId, String username){
+    public Page<DevLogPostReplyDto> getDevLogPostReplies(Integer page, Integer size, Long postId, String username){
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
 
         //@todo add spec for filtering results
 
-        devLogPostReplyRepository.findAll(pageRequest);
+        return devLogPostReplyRepository.findAll(pageRequest).map(DevLogUtils::replyToDto);
     }
 
     //Update Methods
+
+    @Override
+    public DevLogPostDto updateDevLogPost(DevLogPostPatchDto update) {
+        return null;
+    }
+
 
     //Delete Methods
 }

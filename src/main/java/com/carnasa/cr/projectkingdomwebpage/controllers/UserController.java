@@ -6,12 +6,9 @@ import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
 import com.carnasa.cr.projectkingdomwebpage.utils.UserUtils;
 import jakarta.validation.Valid;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +17,8 @@ import java.util.UUID;
 
 @RestController
 public class UserController {
-    public static final String URL = "/api/v1/project-kingdom/users";
-    public static final String URL_ID = URL + "/{id}";
+    public static final String USER_URI = "/api/v1/project-kingdom/users";
+    public static final String USER_URI_ID = USER_URI + "/{id}";
 
     private final UserService userService;
 
@@ -30,7 +27,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping(URL)
+    @GetMapping(USER_URI)
     public ResponseEntity<List<UserDto>> getAllUsers(@RequestParam(required =false) Integer pageSize,
                                                      @RequestParam(required= false) Integer pageNumber,
                                                      @RequestParam(required = false) String usernameContains,
@@ -38,12 +35,12 @@ public class UserController {
         return new ResponseEntity(userService.getAllUsers(pageSize,pageNumber, usernameContains, isActive).getContent(),HttpStatus.OK);
     }
 
-    @GetMapping(URL_ID)
+    @GetMapping(USER_URI_ID)
     public ResponseEntity<UserDto> getUserById(@PathVariable("id") UUID id) {
         return userService.getUserDtoById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping(URL)
+    @PostMapping(USER_URI)
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserEntity userEntity, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -54,13 +51,13 @@ public class UserController {
         }
     }
 
-    @PatchMapping(URL_ID)
+    @PatchMapping(USER_URI_ID)
     public ResponseEntity<UserEntity> updateUser(@PathVariable("id") UUID id, @RequestBody UserPatchDto userPatchDto) {
         UserEntity user = userService.updateUser(userPatchDto, id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @DeleteMapping(URL_ID)
+    @DeleteMapping(USER_URI_ID)
     public ResponseEntity<UserDto> deleteUser(@PathVariable("id") UUID id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
