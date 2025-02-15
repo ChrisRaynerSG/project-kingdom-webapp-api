@@ -130,6 +130,7 @@ public class UserPatchDto {
         this.address1 = address1;
     }
 
+
     public String getAddress2() {
         return address2;
     }
