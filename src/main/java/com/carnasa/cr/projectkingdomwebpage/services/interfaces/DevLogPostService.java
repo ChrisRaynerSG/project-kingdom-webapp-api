@@ -37,8 +37,8 @@ public interface DevLogPostService {
     List<DevLogPostCategoryDto> getDevLogPostCategories();
 
     Optional<DevLogPostReplyDto> getPostReply(Long id);
-    Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, Long postId, String username);
-    Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String username);
+    Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, Long postId, String username, LocalDateTime startDate, LocalDateTime endDate);
+    Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String username, LocalDateTime startDate, LocalDateTime endDate);
 
     //Update
     DevLogPostDto updateDevLogPost(DevLogPostPatchDto update, Long postId);

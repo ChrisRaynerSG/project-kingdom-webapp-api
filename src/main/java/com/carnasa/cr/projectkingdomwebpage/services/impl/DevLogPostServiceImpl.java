@@ -15,6 +15,7 @@ import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostLikeP
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostReplyPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.repositories.devlog.*;
+import com.carnasa.cr.projectkingdomwebpage.repositories.specifications.DevLogPostReplySpecification;
 import com.carnasa.cr.projectkingdomwebpage.repositories.specifications.DevLogPostSpecification;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
@@ -218,11 +219,11 @@ public class DevLogPostServiceImpl implements DevLogPostService {
      * @param page
      * @param size
      * @param postId the id of the post
-     * @param username username if searching a users replies
+     * @param search search query
      * @return
      */
     @Override
-    public Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, Long postId, String username){
+    public Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, Long postId, String search, LocalDateTime startDate, LocalDateTime endDate){
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
 
         if(getDevLogPostById(postId).isEmpty()) {
@@ -232,13 +233,24 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         //@todo add spec for filtering results
         //or not, might not be needed.
 
-        return devLogPostReplyRepository.findAll(pageRequest).map(DevLogUtils::toDto);
+        Specification<DevLogPostReply> spec = Specification
+                .where(DevLogPostReplySpecification.bySearchLike(search))
+                .and(DevLogPostReplySpecification.byDateRange(startDate, endDate))
+                .and(DevLogPostReplySpecification.byPostId(postId));
+
+        return devLogPostReplyRepository.findAll(spec,pageRequest).map(DevLogUtils::toDto);
     }
 
     @Override
-    public Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String username) {
+    public Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String search, LocalDateTime startDate, LocalDateTime endDate) {
+
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
-        return devLogPostReplyRepository.findAll(pageRequest).map(DevLogUtils::toDto);
+
+        Specification<DevLogPostReply> spec = Specification
+                .where(DevLogPostReplySpecification.bySearchLike(search))
+                .and(DevLogPostReplySpecification.byDateRange(startDate, endDate));
+
+        return devLogPostReplyRepository.findAll(spec,pageRequest).map(DevLogUtils::toDto);
     }
 
     @Override

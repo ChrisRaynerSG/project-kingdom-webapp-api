@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.carnasa.cr.projectkingdomwebpage.controllers.devlog.DevLogPostController.*;
@@ -63,8 +64,10 @@ public class DevLogReplyController {
     public ResponseEntity<List<DevLogPostReplyDto>> getDevLogPostReply(@PathVariable Long id,
                                                                        @RequestParam(required = false) Integer page,
                                                                        @RequestParam(required = false) Integer size,
-                                                                       @RequestParam(required = false) String search) {
-        Page<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,id,search);
+                                                                       @RequestParam(required = false) String search,
+                                                                       @RequestParam(required = false) LocalDateTime startDate,
+                                                                       @RequestParam(required = false) LocalDateTime endDate) {
+        Page<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,id,search,startDate,endDate);
         if(replies.isEmpty()) {
             throw new NotFoundException("No replies found for post with ID: " + id);
         }
@@ -85,9 +88,15 @@ public class DevLogReplyController {
     @GetMapping(DEV_LOG_POST_URL + "/replies")
     public ResponseEntity<List<DevLogPostReplyDto>> getAllReplies(@RequestParam(required = false) Integer page,
                                                                   @RequestParam(required = false) Integer size,
-                                                                  @RequestParam(required = false) String search){
-        List<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,search).getContent();
+                                                                  @RequestParam(required = false) String search,
+                                                                  @RequestParam(required = false) LocalDateTime startDate,
+                                                                  @RequestParam(required = false) LocalDateTime endDate) {
+
+        List<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,search,startDate,endDate).getContent();
         if(replies.isEmpty()) {
+            if(search==null){
+                throw new NotFoundException("No replies found");
+            }
             throw new NotFoundException("No replies found using search: " + search);
         }
         return new ResponseEntity<>(replies, HttpStatus.OK);
