@@ -17,6 +17,7 @@ public interface UserService {
     //Read Methods
     Optional<UserEntity> getUserById(UUID userId);
     Optional<UserDto> getUserDtoById(UUID userId);
+    Optional<UserEntity> getByUsername(String username);
 
     Page<UserDto> getAllUsers(Integer pageSize,
                                  Integer page,

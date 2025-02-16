@@ -1,4 +1,4 @@
-package com.carnasa.cr.projectkingdomwebpage.controllers;
+package com.carnasa.cr.projectkingdomwebpage.controllers.user;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
@@ -44,17 +44,6 @@ public class UserController {
         }
         else{
             return new ResponseEntity<>(userService.getUserDtoById(id).get(), HttpStatus.OK);
-        }
-    }
-
-    @PostMapping(USER_URI)
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserPostDto userCredentials, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
-        else{
-            UserDto user = UserUtils.toDto(userService.saveUser(userCredentials));
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
         }
     }
 

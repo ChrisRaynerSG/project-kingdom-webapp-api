@@ -73,6 +73,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<UserEntity> getByUsername(String username) {
+        return userEntityRepository.findByUsername(username);
+    }
+
+    @Override
     public Page<UserDto> getAllUsers(Integer pageSize, Integer page, String username, Boolean active) {
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, pageSize);
 //        if(username != null){
