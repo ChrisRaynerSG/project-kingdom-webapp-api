@@ -40,6 +40,9 @@ public interface DevLogPostService {
     Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, Long postId, String username, LocalDateTime startDate, LocalDateTime endDate);
     Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String username, LocalDateTime startDate, LocalDateTime endDate);
 
+    Page<DevLogPostLikeDto> getPostLikes(Long id, Integer page, Integer size);
+    Page<DevLogPostLikeDto> getReplyLikes(Long id, Integer page, Integer size);
+
     //Update
     DevLogPostDto updateDevLogPost(DevLogPostPatchDto update, Long postId);
     DevLogPostCategoryDto updateDevLogPostCategory(DevLogPostCategoryPatchDto update, Long categoryId);

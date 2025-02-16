@@ -258,6 +258,27 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         return devLogPostReplyRepository.findById(id).map(DevLogUtils::toDto);
     }
 
+    @Override
+    public Page<DevLogPostLikeDto> getPostLikes(Long postId, Integer page, Integer size) {
+        PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
+        Page<DevLogPostLikeDto> likes = devLogPostLikeRepository.findAllByPostId(postId, pageRequest).map(DevLogUtils::toDto);
+
+        if(likes.isEmpty()){
+            throw new NotFoundException("No likes found for post with ID: " + postId);
+        }
+        return likes;
+    }
+
+    @Override
+    public Page<DevLogPostLikeDto> getReplyLikes(Long replyId, Integer page, Integer size) {
+        PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
+        Page<DevLogPostLikeDto> likes = devLogPostReplyLikeRepository.findByReplyId(replyId, pageRequest).map(DevLogUtils::toDto);
+        if(likes.isEmpty()){
+            throw new NotFoundException("No likes found for reply with ID: " + replyId);
+        }
+        return likes;
+    }
+
 
     @Override
     public DevLogPostDto updateDevLogPost(DevLogPostPatchDto update, Long postId) {
@@ -452,3 +473,5 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         }
     }
 }
+
+//@todo add documentation oops.

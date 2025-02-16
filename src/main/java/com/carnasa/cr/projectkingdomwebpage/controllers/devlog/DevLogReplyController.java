@@ -102,6 +102,14 @@ public class DevLogReplyController {
         return new ResponseEntity<>(replies, HttpStatus.OK);
     }
 
+    @GetMapping(DEV_LOG_POST_REPLY_URL_ID_LIKES)
+    public ResponseEntity<List<DevLogPostLikeDto>> getPostReplyLikes(@RequestParam(required = false) Integer page,
+                                                                      @RequestParam(required = false) Integer size,
+                                                                      @PathVariable Long reply,
+                                                                      @PathVariable Long id){
+        return new ResponseEntity<>(devLogPostService.getReplyLikes(reply,page,size).getContent(), HttpStatus.OK);
+    }
+
     //Update
 
     @PatchMapping(DEV_LOG_POST_REPLY_URL_ID)
