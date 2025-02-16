@@ -82,6 +82,17 @@ public class DevLogReplyController {
         return new ResponseEntity<>(devLogPostService.getPostReply(reply).get(),HttpStatus.OK);
     }
 
+    @GetMapping(DEV_LOG_POST_URL + "/replies")
+    public ResponseEntity<List<DevLogPostReplyDto>> getAllReplies(@RequestParam(required = false) Integer page,
+                                                                  @RequestParam(required = false) Integer size,
+                                                                  @RequestParam(required = false) String search){
+        List<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,search).getContent();
+        if(replies.isEmpty()) {
+            throw new NotFoundException("No replies found using search: " + search);
+        }
+        return new ResponseEntity<>(replies, HttpStatus.OK);
+    }
+
     //Update
 
     @PatchMapping(DEV_LOG_POST_REPLY_URL_ID)

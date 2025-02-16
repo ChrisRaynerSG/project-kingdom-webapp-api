@@ -38,6 +38,7 @@ public interface DevLogPostService {
 
     Optional<DevLogPostReplyDto> getPostReply(Long id);
     Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, Long postId, String username);
+    Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String username);
 
     //Update
     DevLogPostDto updateDevLogPost(DevLogPostPatchDto update, Long postId);

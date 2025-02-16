@@ -236,6 +236,12 @@ public class DevLogPostServiceImpl implements DevLogPostService {
     }
 
     @Override
+    public Page<DevLogPostReplyDto> getPostReplies(Integer page, Integer size, String username) {
+        PageRequest pageRequest = ServiceUtils.buildPageRequest(page, size);
+        return devLogPostReplyRepository.findAll(pageRequest).map(DevLogUtils::toDto);
+    }
+
+    @Override
     public Optional<DevLogPostReplyDto> getPostReply(Long id) {
         return devLogPostReplyRepository.findById(id).map(DevLogUtils::toDto);
     }
