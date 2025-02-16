@@ -213,4 +213,20 @@ public class DevLogPostController {
         }
         return new ResponseEntity<>(updatedPost, HttpStatus.OK);
     }
+    @DeleteMapping(DEV_LOG_POST_CATEGORY_URL + "/{id}")
+    public ResponseEntity<DevLogPostCategoryDto> deleteDevLogPostCategory(@PathVariable Long id) {
+        devLogPostService.deleteCategory(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    @DeleteMapping(DEV_LOG_POST_URL_ID)
+    public ResponseEntity<DevLogPostDto> deleteDevLogPostById(@PathVariable Long id) {
+        devLogPostService.deletePost(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    @DeleteMapping(DEV_LOG_POST_REPLY_URL_ID)
+    public ResponseEntity<DevLogPostReplyDto> deleteDevLogPostReplyById(@PathVariable Long reply, @PathVariable Long id) {
+        devLogPostService.deleteReply(reply);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }

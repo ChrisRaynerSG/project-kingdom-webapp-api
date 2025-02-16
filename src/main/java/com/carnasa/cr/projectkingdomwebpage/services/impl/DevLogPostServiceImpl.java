@@ -20,6 +20,7 @@ import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostServic
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
 import com.carnasa.cr.projectkingdomwebpage.utils.ServiceUtils;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -377,4 +378,59 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         }
     }
     //Delete Methods
+
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long categoryId) {
+        if(getCategory(categoryId).isEmpty()) {
+            throw new NotFoundException("Category with ID: " + categoryId + " not found.");
+        }
+        else{
+            DevLogPostCategory category = getCategory(categoryId).get();
+            List<DevLogPost> posts = devLogPostRepository.findAllByDevLogPostCategoryId(categoryId);
+            if(!posts.isEmpty()) {
+                for(DevLogPost post : posts) {
+                    deletePost(post.getId());
+                }
+            }
+            devLogPostCategoryRepository.delete(category);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deletePost(Long postId) {
+        Optional<DevLogPost> postCheck = devLogPostRepository.findById(postId);
+        if(postCheck.isPresent()) {
+            DevLogPost post = postCheck.get();
+            if(!post.getLikes().isEmpty()) {
+                devLogPostLikeRepository.deleteAll(post.getLikes());
+            }
+            if(!post.getReplies().isEmpty()) {
+                for(DevLogPostReply reply : post.getReplies()) {
+                    deleteReply(reply.getId());
+                }
+            }
+            devLogPostRepository.delete(post);
+        }
+        else {
+            throw new NotFoundException("Post with ID: " + postId + " not found.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteReply(Long replyId) {
+        Optional<DevLogPostReply> replyCheck = devLogPostReplyRepository.findById(replyId);
+        if(replyCheck.isPresent()) {
+            if(!replyCheck.get().getLikes().isEmpty()){
+                devLogPostReplyLikeRepository.deleteAll(replyCheck.get().getLikes());
+            }
+            devLogPostReplyRepository.delete(replyCheck.get());
+        }
+        else{
+            throw new NotFoundException("Reply with ID: " + replyId + " not found.");
+        }
+    }
 }

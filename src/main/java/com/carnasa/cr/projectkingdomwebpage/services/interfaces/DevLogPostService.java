@@ -49,6 +49,7 @@ public interface DevLogPostService {
 
     //Delete
     //@todo delete post, replies, categories
-
-
+    void deleteCategory(Long categoryId);
+    void deletePost(Long postId);
+    void deleteReply(Long replyId);
 }
