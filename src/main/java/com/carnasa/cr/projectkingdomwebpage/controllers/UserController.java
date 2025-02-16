@@ -1,7 +1,7 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
-import com.carnasa.cr.projectkingdomwebpage.exceptions.NotFoundException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;

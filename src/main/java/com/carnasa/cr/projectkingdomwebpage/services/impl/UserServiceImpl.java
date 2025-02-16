@@ -1,9 +1,9 @@
 package com.carnasa.cr.projectkingdomwebpage.services.impl;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.*;
-import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
-import com.carnasa.cr.projectkingdomwebpage.exceptions.NotFoundException;
-import com.carnasa.cr.projectkingdomwebpage.exceptions.UserDetailsAlreadyExistException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.BadRequestException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.ConflictException;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
@@ -25,8 +25,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-import static com.carnasa.cr.projectkingdomwebpage.repositories.specifications.UserSpecification.getUserByActive;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -247,10 +245,10 @@ public class UserServiceImpl implements UserService {
 
         // first check to see if username or email already exists in the database
         if(getUserByUsername(userEntity.getUsername()).isPresent()){
-            throw new UserDetailsAlreadyExistException("Username: " + userEntity.getUsername() + " already in use.");
+            throw new ConflictException("Username: " + userEntity.getUsername() + " already in use.");
         }
         if(getUserByEmail(userEntity.getEmail()).isPresent()){
-            throw new UserDetailsAlreadyExistException("Email: " + userEntity.getEmail().toLowerCase() + " already in use.");
+            throw new ConflictException("Email: " + userEntity.getEmail().toLowerCase() + " already in use.");
         }
         //then validate fields to make sure they are acceptable to be saved
         //@Todo remove todos

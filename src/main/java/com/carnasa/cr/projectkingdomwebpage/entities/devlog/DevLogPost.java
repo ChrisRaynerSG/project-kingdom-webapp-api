@@ -42,7 +42,7 @@ public class DevLogPost {
     @Column(name = "is_updated")
     private Boolean isUpdated = false;
 
-    @OneToMany
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DevLogPostLike> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)

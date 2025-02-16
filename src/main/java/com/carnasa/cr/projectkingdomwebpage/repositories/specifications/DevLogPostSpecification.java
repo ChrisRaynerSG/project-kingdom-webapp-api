@@ -3,7 +3,7 @@ package com.carnasa.cr.projectkingdomwebpage.repositories.specifications;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostLike;
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
-import com.carnasa.cr.projectkingdomwebpage.exceptions.BadRequestException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.BadRequestException;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -84,5 +84,11 @@ public class DevLogPostSpecification {
 
             return likesWithinPeriod;
         };
+    }
+    public static Specification<DevLogPost> getPostByActive(Boolean active){
+        if(active == null || !active) {
+            return null;
+        }
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("active"), active);
     }
 }

@@ -4,6 +4,10 @@ import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 public interface DevLogPostLikeRepository extends JpaRepository<DevLogPostLike, Long> {
+    Optional<DevLogPostLike> findByPostIdAndUserId(Long postId, UUID userId);
 }

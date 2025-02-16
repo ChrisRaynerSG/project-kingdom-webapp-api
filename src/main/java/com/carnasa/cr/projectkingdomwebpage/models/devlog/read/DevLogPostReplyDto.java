@@ -1,4 +1,4 @@
-package com.carnasa.cr.projectkingdomwebpage.models.devlog;
+package com.carnasa.cr.projectkingdomwebpage.models.devlog.read;
 
 import java.time.LocalDateTime;
 
