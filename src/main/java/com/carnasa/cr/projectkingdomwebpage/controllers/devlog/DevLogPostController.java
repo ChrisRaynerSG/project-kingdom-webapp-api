@@ -1,4 +1,4 @@
-package com.carnasa.cr.projectkingdomwebpage.controllers;
+package com.carnasa.cr.projectkingdomwebpage.controllers.devlog;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostCategory;
@@ -45,24 +45,13 @@ public class DevLogPostController {
         this.devLogPostService = devLogPostService;
     }
 
+    //Create
+
     @PostMapping(DEV_LOG_POST_URL)
     public ResponseEntity<DevLogPostDto> postDevLogPost(@RequestBody DevLogPostPostDto devlogPostPostDto) {
 
         DevLogPost devlogPost = devLogPostService.createDevLogPost(devlogPostPostDto);
         return new ResponseEntity<>(DevLogUtils.toDto(devlogPost), HttpStatus.CREATED);
-    }
-
-    @PostMapping(DEV_LOG_POST_REPLY_URL)
-    public ResponseEntity<DevLogPostReplyDto> postDevLogPostReply(@PathVariable Long id,
-                                                                  @RequestBody DevLogPostReplyPostDto postReply) {
-        DevLogPostReply savedReply = devLogPostService.createDevLogPostReply(postReply, id);
-        return new ResponseEntity<>(DevLogUtils.toDto(savedReply), HttpStatus.CREATED);
-    }
-
-    @PostMapping(DEV_LOG_POST_CATEGORY_URL)
-    public ResponseEntity<DevLogPostCategoryDto> postDevLogPostCategory(@RequestBody DevLogPostCategoryPostDto newCategory) {
-        DevLogPostCategory savedCategory = devLogPostService.createDevLogPostCategory(newCategory);
-        return new ResponseEntity<>(DevLogUtils.toDto(savedCategory), HttpStatus.CREATED);
     }
 
     @PutMapping(DEV_LOG_POST_LIKES_URL)
@@ -77,18 +66,7 @@ public class DevLogPostController {
         }
     }
 
-    @PutMapping(DEV_LOG_POST_REPLY_URL_ID)
-    public ResponseEntity<DevLogPostLikeDto> toggleReplyLike(@RequestBody DevLogPostLikePutDto like,
-                                                                  @PathVariable Long id,
-                                                                  @PathVariable Long reply){
-        DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostReplyLike(like, id, reply);
-        if(likeCheck==null){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        else {
-            return new ResponseEntity<>(likeCheck, HttpStatus.CREATED);
-        }
-    }
+    //Read
 
     /**
      *
@@ -134,58 +112,7 @@ public class DevLogPostController {
         return new ResponseEntity<>(devLogPostService.getDevLogPostByIdDto(id).get(),HttpStatus.OK);
     }
 
-    /**
-     *
-     * @param id
-     * @param page
-     * @param size
-     * @param search
-     * @return list of all replies for a specific post
-     */
-    @GetMapping(DEV_LOG_POST_REPLY_URL)
-    public ResponseEntity<List<DevLogPostReplyDto>> getDevLogPostReply(@PathVariable Long id,
-                                                                       @RequestParam(required = false) Integer page,
-                                                                       @RequestParam(required = false) Integer size,
-                                                                       @RequestParam(required = false) String search) {
-        Page<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,id,search);
-        if(replies.isEmpty()) {
-            throw new NotFoundException("No replies found for post with ID: " + id);
-        }
-        return new ResponseEntity<>(replies.getContent(), HttpStatus.OK);
-    }
-
-    @GetMapping(DEV_LOG_POST_REPLY_URL_ID)
-    public ResponseEntity<DevLogPostReplyDto> getDevLogPostReplyById(@PathVariable Long id, @PathVariable Long reply) {
-
-        // more checks here to make sure post id and post id on reply match?
-
-        if(devLogPostService.getPostReply(reply).isEmpty()) {
-            throw new NotFoundException("No replies found for post: " + id  + "with id " + reply);
-        }
-        return new ResponseEntity<>(devLogPostService.getPostReply(reply).get(),HttpStatus.OK);
-    }
-
-
-    /**
-     * @return all categories for the Dev Log entity/model
-     */
-    @GetMapping(DEV_LOG_POST_CATEGORY_URL)
-    public ResponseEntity<List<DevLogPostCategoryDto>> getDevLogCategories() {
-        return new ResponseEntity<>(devLogPostService.getDevLogPostCategories(), HttpStatus.OK);
-    }
-
-    /**
-     *
-     * @param id id of the category
-     * @return single instance of a Dev Log category
-     */
-    @GetMapping(DEV_LOG_POST_CATEGORY_URL + "/{id}")
-    public ResponseEntity<DevLogPostCategoryDto> getDevLogPostCategory(@PathVariable Long id) {
-        if(devLogPostService.getCategoryDto(id).isEmpty()) {
-            throw new NotFoundException("No posts found with id " + id);
-        }
-        return new ResponseEntity<>(devLogPostService.getCategoryDto(id).get(),HttpStatus.OK);
-    }
+    //Update
 
     @PatchMapping(DEV_LOG_POST_URL_ID)
     public ResponseEntity<DevLogPostDto> patchDevLogPost(@RequestBody DevLogPostPatchDto update, @PathVariable Long id) {
@@ -196,37 +123,11 @@ public class DevLogPostController {
         return new ResponseEntity<>(updatedPost, HttpStatus.OK);
     }
 
-    @PatchMapping(DEV_LOG_POST_CATEGORY_URL + "/{id}")
-    public ResponseEntity<DevLogPostCategoryDto> patchDevLogPostCategory(@RequestBody DevLogPostCategoryPatchDto update, @PathVariable Long id) {
-        DevLogPostCategoryDto updatedPost = devLogPostService.updateDevLogPostCategory(update, id);
-        if(updatedPost==null){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(updatedPost, HttpStatus.OK);
-    }
+    //Delete
 
-    @PatchMapping(DEV_LOG_POST_REPLY_URL_ID)
-    public ResponseEntity<DevLogPostReplyDto> patchDevLogPostReply(@RequestBody DevLogPostReplyPatchDto update, @PathVariable Long id, @PathVariable Long reply) {
-        DevLogPostReplyDto updatedPost = devLogPostService.updateDevLogPostReply(update, id, reply);
-        if(updatedPost==null){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(updatedPost, HttpStatus.OK);
-    }
-    @DeleteMapping(DEV_LOG_POST_CATEGORY_URL + "/{id}")
-    public ResponseEntity<DevLogPostCategoryDto> deleteDevLogPostCategory(@PathVariable Long id) {
-        devLogPostService.deleteCategory(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
     @DeleteMapping(DEV_LOG_POST_URL_ID)
     public ResponseEntity<DevLogPostDto> deleteDevLogPostById(@PathVariable Long id) {
         devLogPostService.deletePost(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    @DeleteMapping(DEV_LOG_POST_REPLY_URL_ID)
-    public ResponseEntity<DevLogPostReplyDto> deleteDevLogPostReplyById(@PathVariable Long reply, @PathVariable Long id) {
-        devLogPostService.deleteReply(reply);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
 }
