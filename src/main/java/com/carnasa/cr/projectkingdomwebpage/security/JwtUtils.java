@@ -7,9 +7,11 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Set;
 import java.util.function.Function;
 
 @Component
@@ -22,9 +24,10 @@ public class JwtUtils{
     private Long jwtExpirationMs;
 
 
-    public String generateToken(String username) {
+    public String generateToken(String username, Set<String> roles) {
         return Jwts.builder()
                 .subject(username)
+                .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+ jwtExpirationMs))
                 .signWith(getSigningKey())
@@ -43,9 +46,8 @@ public class JwtUtils{
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        Claims claim = Jwts.claims()
-                .subject(token)
-                .build();
+        Claims claim = parseClaims(token);
+
 //        Claims claim = Jwts.parserBuilder()
 //                .setSigningKey(getSigningKey())
 //                .build()
@@ -56,7 +58,7 @@ public class JwtUtils{
 
     public boolean validateToken(String token) {
         try{
-            Jwts.parser().build();
+            parseClaims(token);
             return true;
         }
         catch (JwtException | IllegalArgumentException e) {
@@ -64,7 +66,16 @@ public class JwtUtils{
         }
     }
 
-    public Key getSigningKey() {
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+
+    public SecretKey getSigningKey() {
         byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }

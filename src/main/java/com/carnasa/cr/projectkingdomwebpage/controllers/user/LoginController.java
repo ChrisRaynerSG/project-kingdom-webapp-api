@@ -1,5 +1,6 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers.user;
 
+import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserLoginDto;
 import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.carnasa.cr.projectkingdomwebpage.controllers.devlog.DevLogPostController.BASE_URL;
 
@@ -51,8 +53,15 @@ public class LoginController {
 
         try{
             authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(userCredentials.getUsername(), userCredentials.getPassword()));
-            String token = jwtUtils.generateToken(userCredentials.getUsername());
-            return ResponseEntity.ok().body(Map.of("token", token));
+
+            Optional<UserEntity> user = userService.getByUsername(userCredentials.getUsername());
+            if(user.isPresent()){
+                String token = jwtUtils.generateToken(userCredentials.getUsername(), user.get().getRoles());
+                return ResponseEntity.ok().body(Map.of("token", token));
+            }
+            else{
+                return ResponseEntity.status(401).body("Invalid username or password");
+            }
         }
         catch (Exception ex) {
             return ResponseEntity.status(401).body("Invalid username or password");

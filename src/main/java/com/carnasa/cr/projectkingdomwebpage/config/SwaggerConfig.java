@@ -20,7 +20,7 @@ public class SwaggerConfig {
                         .description("Documentation and functionality of the API for " +
                                 " Kingdom Of Mine webapp.")
                         .version("1.0.0"))
-                .components(new Components().addSecuritySchemes("JWT",
+                .components(new Components().addSecuritySchemes("bearerAuth",
                         new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
     }
