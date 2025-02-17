@@ -3,6 +3,7 @@ package com.carnasa.cr.projectkingdomwebpage.exceptions;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.BadRequestException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.ConflictException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.ForbiddenException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,4 +32,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("BAD_REQUEST", ex.getMessage(), request.getRequestURL().toString()), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ErrorResponse> handleForbiddenException(Exception ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse("FORBIDDEN", ex.getMessage(), request.getRequestURL().toString()), HttpStatus.FORBIDDEN);
+    }
 }

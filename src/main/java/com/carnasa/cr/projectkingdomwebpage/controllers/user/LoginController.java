@@ -62,7 +62,7 @@ public class LoginController {
 
             Optional<UserEntity> user = userService.getByUsername(userCredentials.getUsername());
             if(user.isPresent()){
-                String token = jwtUtils.generateToken(userCredentials.getUsername(), user.get().getRoles(), user.get().getId());
+                String token = jwtUtils.generateToken(userCredentials.getUsername(), user.get().getRoles(), user.get().getId().toString());
                 log.info("User: {} Logged in successfully. Token: {}", userCredentials.getUsername(), token);
                 return ResponseEntity.ok().body(Map.of("token", token));
             }

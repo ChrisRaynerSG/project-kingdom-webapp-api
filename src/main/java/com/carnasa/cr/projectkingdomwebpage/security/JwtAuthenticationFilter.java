@@ -1,5 +1,6 @@
 package com.carnasa.cr.projectkingdomwebpage.security;
 
+import com.carnasa.cr.projectkingdomwebpage.entities.user.UserDetailsPrincipal;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -46,11 +48,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Claims claims = jwtUtils.parseClaims(token);
         String username = claims.getSubject();
         List<String> roles = claims.get("roles", List.class);
+        String userId = jwtUtils.extractUserId(token);
         List<SimpleGrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
 
-        UserDetails userDetails = User.withUsername(username)
-                .authorities(authorities)
-                .password("")
+        UserDetailsPrincipal userDetails = UserDetailsPrincipal.builderWithPrincipal().withUsername(username)
+                .withAuthorities(authorities)
+                .withPassword("")
+                .withId(userId)
                 .build();
 
         log.info(userDetails.toString());

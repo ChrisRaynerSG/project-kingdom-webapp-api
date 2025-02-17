@@ -28,7 +28,7 @@ public class JwtUtils{
     public static Logger log = LoggerFactory.getLogger(JwtUtils.class);
 
 
-    public String generateToken(String username, Set<String> roles, UUID userId) {
+    public String generateToken(String username, Set<String> roles, String userId) {
         log.trace("Generating JWT token for user {}", username);
         return Jwts.builder()
                 .subject(username)
@@ -57,9 +57,9 @@ public class JwtUtils{
         return extractClaim(token, claims -> claims.get("roles", String.class));
     }
 
-    public UUID extractUserId(String token) {
+    public String extractUserId(String token) {
         log.trace("Extracting user id from JWT token {}", token);
-        return extractClaim(token, claims -> claims.get("userId", UUID.class));
+        return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

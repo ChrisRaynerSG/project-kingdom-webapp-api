@@ -1,6 +1,7 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers.devlog;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.ForbiddenException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostDto;
@@ -9,6 +10,7 @@ import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostLikeP
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
+import com.carnasa.cr.projectkingdomwebpage.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.carnasa.cr.projectkingdomwebpage.utils.LoggingUtils.*;
 
@@ -48,8 +51,15 @@ public class DevLogPostController {
     @PostMapping(DEV_LOG_POST_URL)
     public ResponseEntity<DevLogPostDto> postDevLogPost(@RequestBody DevLogPostPostDto devlogPostPostDto) {
         log.trace(POST_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL);
-        DevLogPost devlogPost = devLogPostService.createDevLogPost(devlogPostPostDto);
-        return new ResponseEntity<>(DevLogUtils.toDto(devlogPost), HttpStatus.CREATED);
+        try {
+            UUID userId = SecurityUtils.getCurrentUserId();
+            DevLogPost devlogPost = devLogPostService.createDevLogPost(devlogPostPostDto, userId);
+            return new ResponseEntity<>(DevLogUtils.toDto(devlogPost), HttpStatus.CREATED);
+        }
+        catch (RuntimeException e) {
+            log.warn("Error posting DevLog post with error: {}", e.getMessage());
+            throw new ForbiddenException("You must be logged in with Developer Role to create a Dev Log Post");
+        }
     }
 
     @PutMapping(DEV_LOG_POST_LIKES_URL)

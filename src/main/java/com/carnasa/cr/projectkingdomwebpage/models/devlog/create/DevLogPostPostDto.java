@@ -7,7 +7,7 @@ public class DevLogPostPostDto {
     private String title;
     private String message;
     private Long categoryId;
-    private UUID userId;
+//    private UUID userId;
 
     public String getTitle() {
         return title;
@@ -33,11 +33,11 @@ public class DevLogPostPostDto {
         this.categoryId = categoryId;
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
+//    public UUID getUserId() {
+//        return userId;
+//    }
+//
+//    public void setUserId(UUID userId) {
+//        this.userId = userId;
+//    }
 }

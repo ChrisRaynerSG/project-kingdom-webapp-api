@@ -1,5 +1,6 @@
 package com.carnasa.cr.projectkingdomwebpage.services.impl;
 
+import com.carnasa.cr.projectkingdomwebpage.entities.user.UserDetailsPrincipal;
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
 import org.slf4j.Logger;
@@ -33,14 +34,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetailsPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity user = userService.getByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         Set<GrantedAuthority> authorities = user.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
-            return User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
-                    .authorities(authorities)
+            return UserDetailsPrincipal.builderWithPrincipal()
+                    .withUsername(user.getUsername())
+                    .withPassword(user.getPassword())
+                    .withAuthorities(authorities)
+                    .withId(user.getId().toString())
                     .build();
 
     }

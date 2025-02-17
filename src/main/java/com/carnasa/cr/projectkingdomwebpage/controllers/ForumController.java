@@ -13,11 +13,11 @@ public class ForumController {
 
     public Logger log = LoggerFactory.getLogger(ForumController.class);
 
-    private final ForumService forumService;
-
-    @Autowired
-    public ForumController(ForumService forumService) {
-        log.trace("Creating ForumController");
-        this.forumService = forumService;
-    }
+//    private final ForumService forumService;
+//
+//    @Autowired
+//    public ForumController(ForumService forumService) {
+//        log.trace("Creating ForumController");
+//        this.forumService = forumService;
+//    }
 }

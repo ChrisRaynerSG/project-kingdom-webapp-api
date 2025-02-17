@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +88,7 @@ public class DevLogPostServiceImpl implements DevLogPostService {
      * @see BadRequestException
      */
     @Override
-    public DevLogPost createDevLogPost(DevLogPostPostDto devLogPostPostDto) {
+    public DevLogPost createDevLogPost(DevLogPostPostDto devLogPostPostDto, UUID userId) {
 
         log.trace("Attempting to create a DevLogPost");
         DevLogPost devLogPost = new DevLogPost();
@@ -99,12 +100,12 @@ public class DevLogPostServiceImpl implements DevLogPostService {
             log.trace("Setting up post category relationship");
             devLogPost.setDevLogPostCategory(getDevLogPostCategoryById(devLogPostPostDto.getCategoryId()).get());
         }
-        if(userService.getUserById(devLogPostPostDto.getUserId()).isPresent()) {
+        if(userService.getUserById(userId).isPresent()) {
             log.trace("Setting up user relationship");
-            devLogPost.setCreator(userService.getUserById(devLogPostPostDto.getUserId()).get());
+            devLogPost.setCreator(userService.getUserById(userId).get());
         }
         else{
-            log.warn("User information with ID: {} does not exist ", devLogPostPostDto.getUserId());
+            log.warn("User information with ID: {} does not exist ", userId);
             throw new BadRequestException("Unable to create post as user information unable to be retrieved");
         }
 
