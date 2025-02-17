@@ -1,6 +1,5 @@
 package com.carnasa.cr.projectkingdomwebpage.config;
 
-import com.carnasa.cr.projectkingdomwebpage.controllers.devlog.DevLogPostController;
 import com.carnasa.cr.projectkingdomwebpage.security.JwtAuthenticationFilter;
 import com.carnasa.cr.projectkingdomwebpage.services.impl.UserDetailsServiceImpl;
 import org.slf4j.Logger;
@@ -15,12 +14,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -50,7 +45,7 @@ public class SecurityConfig
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http) throws Exception {
 
-        logger.info("Configuring SecurityFilterChain");
+        logger.trace("Configuring SecurityFilterChain");
         return http.
                 csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(
@@ -70,11 +65,11 @@ public class SecurityConfig
     public AuthenticationManager authenticationManager(
             UserDetailsServiceImpl userDetailsService,
             PasswordEncoder passwordEncoder) throws Exception {
-        logger.info("Configuring AuthenticationManager");
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
 
+        logger.trace("Configuring AuthenticationManager");
         return new ProviderManager(daoAuthenticationProvider);
     }
 }

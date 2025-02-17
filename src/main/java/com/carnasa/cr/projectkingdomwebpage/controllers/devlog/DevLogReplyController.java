@@ -9,6 +9,8 @@ import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostLikeP
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostReplyPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -19,14 +21,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.carnasa.cr.projectkingdomwebpage.controllers.devlog.DevLogPostController.*;
+import static com.carnasa.cr.projectkingdomwebpage.utils.LoggingUtils.*;
 
 @RestController
 public class DevLogReplyController {
 
+    public static Logger log = LoggerFactory.getLogger(DevLogReplyController.class);
     private final DevLogPostService devLogPostService;
 
     @Autowired
     public DevLogReplyController(DevLogPostService devLogPostService) {
+        log.trace("Creating DevLogReplyController");
         this.devLogPostService = devLogPostService;
     }
 
@@ -35,6 +40,7 @@ public class DevLogReplyController {
     @PostMapping(DEV_LOG_POST_REPLY_URL)
     public ResponseEntity<DevLogPostReplyDto> postDevLogPostReply(@PathVariable Long id,
                                                                   @RequestBody DevLogPostReplyPostDto postReply) {
+        log.trace(POST_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL);
         DevLogPostReply savedReply = devLogPostService.createDevLogPostReply(postReply, id);
         return new ResponseEntity<>(DevLogUtils.toDto(savedReply), HttpStatus.CREATED);
     }
@@ -43,6 +49,7 @@ public class DevLogReplyController {
     public ResponseEntity<DevLogPostLikeDto> toggleReplyLike(@RequestBody DevLogPostLikePutDto like,
                                                              @PathVariable Long id,
                                                              @PathVariable Long reply){
+        log.trace(PUT_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL_ID);
         DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostReplyLike(like, id, reply);
         if(likeCheck==null){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -67,6 +74,7 @@ public class DevLogReplyController {
                                                                        @RequestParam(required = false) String search,
                                                                        @RequestParam(required = false) LocalDateTime startDate,
                                                                        @RequestParam(required = false) LocalDateTime endDate) {
+        log.trace(GET_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL);
         Page<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,id,search,startDate,endDate);
         if(replies.isEmpty()) {
             throw new NotFoundException("No replies found for post with ID: " + id);
@@ -76,7 +84,7 @@ public class DevLogReplyController {
 
     @GetMapping(DEV_LOG_POST_REPLY_URL_ID)
     public ResponseEntity<DevLogPostReplyDto> getDevLogPostReplyById(@PathVariable Long id, @PathVariable Long reply) {
-
+        log.trace(GET_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL_ID);
         // more checks here to make sure post id and post id on reply match?
 
         if(devLogPostService.getPostReply(reply).isEmpty()) {
@@ -91,6 +99,7 @@ public class DevLogReplyController {
                                                                   @RequestParam(required = false) String search,
                                                                   @RequestParam(required = false) LocalDateTime startDate,
                                                                   @RequestParam(required = false) LocalDateTime endDate) {
+        log.trace(GET_ENDPOINT_LOG_HIT,DEV_LOG_POST_URL+ "/replies");
 
         List<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,search,startDate,endDate).getContent();
         if(replies.isEmpty()) {
@@ -107,6 +116,7 @@ public class DevLogReplyController {
                                                                       @RequestParam(required = false) Integer size,
                                                                       @PathVariable Long reply,
                                                                       @PathVariable Long id){
+        log.trace(GET_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL_ID_LIKES);
         return new ResponseEntity<>(devLogPostService.getReplyLikes(reply,page,size).getContent(), HttpStatus.OK);
     }
 
@@ -114,6 +124,7 @@ public class DevLogReplyController {
 
     @PatchMapping(DEV_LOG_POST_REPLY_URL_ID)
     public ResponseEntity<DevLogPostReplyDto> patchDevLogPostReply(@RequestBody DevLogPostReplyPatchDto update, @PathVariable Long id, @PathVariable Long reply) {
+        log.trace(PATCH_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL_ID);
         DevLogPostReplyDto updatedPost = devLogPostService.updateDevLogPostReply(update, id, reply);
         if(updatedPost==null){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -125,6 +136,7 @@ public class DevLogReplyController {
 
     @DeleteMapping(DEV_LOG_POST_REPLY_URL_ID)
     public ResponseEntity<DevLogPostReplyDto> deleteDevLogPostReplyById(@PathVariable Long reply, @PathVariable Long id) {
+        log.trace(DELETE_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL_ID);
         devLogPostService.deleteReply(reply);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

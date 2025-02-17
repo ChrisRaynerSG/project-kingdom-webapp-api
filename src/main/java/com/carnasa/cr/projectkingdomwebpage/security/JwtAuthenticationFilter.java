@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,11 +23,14 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private final JwtUtils jwtUtils;
 
 
     @Autowired
     public JwtAuthenticationFilter(JwtUtils jwtUtils) {
+        log.trace("JwtAuthenticationFilter created");
         this.jwtUtils = jwtUtils;
     }
     @Override
@@ -34,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if(token == null || !jwtUtils.validateToken(token)) {
             filterChain.doFilter(request, response);
+            log.info("JWT token does not exist or is invalid");
             return;
         }
 
@@ -47,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .password("")
                 .build();
 
-        logger.info(userDetails.toString());
+        log.info(userDetails.toString());
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
@@ -61,8 +67,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
+            log.warn("Authorization header is missing, or invalid");
             return null;
         }
+        log.trace("Token successfully obtained");
         return header.substring(7);
     }
 }

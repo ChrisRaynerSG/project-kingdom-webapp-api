@@ -1,24 +1,17 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers.devlog;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
-import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostCategory;
-import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPostReply;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostCategoryPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostPostDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostReplyPostDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostCategoryDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostLikeDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostReplyDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostCategoryPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostLikePutDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostPatchDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostReplyPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.carnasa.cr.projectkingdomwebpage.utils.LoggingUtils.*;
+
 @RestController
 public class DevLogPostController {
+
+    public static Logger log = LoggerFactory.getLogger(DevLogPostController.class);
 
     public static final String BASE_URL = "/api/v1/project-kingdom";
     public static final String DEV_LOG_POST_URL = BASE_URL + "/devlogs";
@@ -42,6 +39,7 @@ public class DevLogPostController {
 
     @Autowired
     public DevLogPostController(DevLogPostService devLogPostService) {
+        log.trace("Creating DevLogPostController");
         this.devLogPostService = devLogPostService;
     }
 
@@ -49,7 +47,7 @@ public class DevLogPostController {
 
     @PostMapping(DEV_LOG_POST_URL)
     public ResponseEntity<DevLogPostDto> postDevLogPost(@RequestBody DevLogPostPostDto devlogPostPostDto) {
-
+        log.trace(POST_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL);
         DevLogPost devlogPost = devLogPostService.createDevLogPost(devlogPostPostDto);
         return new ResponseEntity<>(DevLogUtils.toDto(devlogPost), HttpStatus.CREATED);
     }
@@ -57,11 +55,14 @@ public class DevLogPostController {
     @PutMapping(DEV_LOG_POST_LIKES_URL)
     public ResponseEntity<DevLogPostLikeDto> togglePostLike(@RequestBody DevLogPostLikePutDto like,
                                                             @PathVariable Long id){
+        log.trace(PUT_ENDPOINT_LOG_HIT, DEV_LOG_POST_LIKES_URL);
         DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostLike(like, id);
         if(likeCheck==null){
+            log.info("Removing post like");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT); // like is removed
         }
         else{
+            log.info("Adding post like");
             return new ResponseEntity<>(likeCheck, HttpStatus.CREATED);
         }
     }
@@ -92,6 +93,7 @@ public class DevLogPostController {
             @RequestParam(required = false) String categoryName,
             @RequestParam(required = false, defaultValue = "true") boolean isActive
     ) {
+        log.trace(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL);
         List<DevLogPostDto> devLogPosts = devLogPostService
                 .getDevLogPosts(page, pageSize, categoryName, search, startDate, endDate, isPopular, username, isActive).getContent();
         if(devLogPosts.isEmpty()) {
@@ -106,6 +108,7 @@ public class DevLogPostController {
      */
     @GetMapping(DEV_LOG_POST_URL_ID)
     public ResponseEntity<DevLogPostDto> getDevLogPostById(@PathVariable Long id) {
+        log.trace(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_ID);
         if(devLogPostService.getDevLogPostByIdDto(id).isEmpty()) {
             throw new NotFoundException("No posts found with id " + id);
         }
@@ -116,6 +119,7 @@ public class DevLogPostController {
     public ResponseEntity<List<DevLogPostLikeDto>> getPostReplyLikes(@RequestParam(required = false) Integer page,
                                                                      @RequestParam(required = false) Integer size,
                                                                      @PathVariable Long id){
+        log.trace(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_LIKES_URL);
         return new ResponseEntity<>(devLogPostService.getPostLikes(id,page,size).getContent(), HttpStatus.OK);
     }
 
@@ -123,6 +127,7 @@ public class DevLogPostController {
 
     @PatchMapping(DEV_LOG_POST_URL_ID)
     public ResponseEntity<DevLogPostDto> patchDevLogPost(@RequestBody DevLogPostPatchDto update, @PathVariable Long id) {
+        log.trace(PATCH_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_ID);
         DevLogPostDto updatedPost = devLogPostService.updateDevLogPost(update, id);
         if(updatedPost==null){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -134,6 +139,7 @@ public class DevLogPostController {
 
     @DeleteMapping(DEV_LOG_POST_URL_ID)
     public ResponseEntity<DevLogPostDto> deleteDevLogPostById(@PathVariable Long id) {
+        log.trace(DELETE_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_ID);
         devLogPostService.deletePost(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
