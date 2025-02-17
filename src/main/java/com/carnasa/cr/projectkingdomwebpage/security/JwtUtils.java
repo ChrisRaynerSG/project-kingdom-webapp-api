@@ -12,6 +12,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Component
@@ -24,10 +25,11 @@ public class JwtUtils{
     private Long jwtExpirationMs;
 
 
-    public String generateToken(String username, Set<String> roles) {
+    public String generateToken(String username, Set<String> roles, UUID userId) {
         return Jwts.builder()
                 .subject(username)
                 .claim("roles", roles)
+                .claim("userId", userId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+ jwtExpirationMs))
                 .signWith(getSigningKey())
@@ -43,6 +45,14 @@ public class JwtUtils{
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("roles", String.class));
+    }
+
+    public UUID extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", UUID.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
