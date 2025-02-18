@@ -547,22 +547,22 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         }
     }
     /**
-     * @param toggleLike DevLogPostLikePutDto object containing userId (if null will throw exception)
+     * @param userId UUID of user
      * @param postId id of post to be liked
      * @return null if like already exists as like is removed, DevLogPostLikeDto object containing username and createdAt timestamp
      */
     @Override
-    public DevLogPostLikeDto toggleDevLogPostLike(DevLogPostLikePutDto toggleLike, Long postId) {
+    public DevLogPostLikeDto toggleDevLogPostLike(UUID userId, Long postId) {
 
         log.trace("Attempting to update like status for post with ID: {} ", postId);
 
-        if(toggleLike.getUserId() == null){
+        if(userId == null){
             log.info("No user provided to toggle like status for post with ID: {}", postId);
             throw new BadRequestException("User id is required to toggle like status.");
         }
 
-        if(userService.getUserById(toggleLike.getUserId()).isEmpty()) {
-            log.warn("No User found for ID: {}", toggleLike.getUserId());
+        if(userService.getUserById(userId).isEmpty()) {
+            log.warn("No User found for ID: {}", userId);
             throw new BadRequestException("Unable to like as user information unable to be retrieved");
         }
 
@@ -572,33 +572,33 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         }
 
         DevLogPostLike like = new DevLogPostLike();
-        Optional<DevLogPostLike> likeCheck = devLogPostLikeRepository.findByPostIdAndUserId(postId,toggleLike.getUserId());
+        Optional<DevLogPostLike> likeCheck = devLogPostLikeRepository.findByPostIdAndUserId(postId,userId);
         if(likeCheck.isPresent()) {
             try {
-                log.info("Attempting to delete like for post with ID: {} for user with ID: {}", postId, toggleLike.getUserId());
+                log.info("Attempting to delete like for post with ID: {} for user with ID: {}", postId, userId);
                 devLogPostLikeRepository.delete(likeCheck.get());
-                log.info("Like successfully deleted for post with ID: {} for user with ID: {}", postId, toggleLike.getUserId());
+                log.info("Like successfully deleted for post with ID: {} for user with ID: {}", postId, userId);
                 return null;
             }
             catch(Exception e){
-                log.error("Unable to delete like for post with ID: {} for user with ID: {} with error: {}", postId, toggleLike.getUserId(), e.getMessage());
+                log.error("Unable to delete like for post with ID: {} for user with ID: {} with error: {}", postId, userId, e.getMessage());
                 throw new BadRequestException("Unable to delete like for post with ID: " + postId);
             }
         }
         else{
             try {
-                log.info("Attempting to save like for post with ID: {} for user with ID: {}", postId, toggleLike.getUserId());
+                log.info("Attempting to save like for post with ID: {} for user with ID: {}", postId, userId);
                 like.setPost(getDevLogPostById(postId).get());
-                like.setUser(userService.getUserById(toggleLike.getUserId()).get());
+                like.setUser(userService.getUserById(userId).get());
                 like.setCreatedAt(LocalDateTime.now());
                 like.setLastModified(LocalDateTime.now());
                 like.setActive(true);
                 like = devLogPostLikeRepository.save(like);
-                log.info("Like successfully added for post with ID: {} for user with ID: {}", postId, toggleLike.getUserId());
+                log.info("Like successfully added for post with ID: {} for user with ID: {}", postId, userId);
                 return DevLogUtils.toDto(like);
             }
             catch(Exception e){
-                log.error("Unable to save like for post with ID: {} for user with ID: {} with error: {}", postId, toggleLike.getUserId(), e.getMessage());
+                log.error("Unable to save like for post with ID: {} for user with ID: {} with error: {}", postId, userId, e.getMessage());
                 throw new BadRequestException("Unable to save like for post with ID: " + postId);
             }
         }

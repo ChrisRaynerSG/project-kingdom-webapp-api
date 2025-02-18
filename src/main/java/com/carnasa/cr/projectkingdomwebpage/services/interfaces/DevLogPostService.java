@@ -49,7 +49,7 @@ public interface DevLogPostService {
     DevLogPostCategoryDto updateDevLogPostCategory(DevLogPostCategoryPatchDto update, Long categoryId);
     DevLogPostReplyDto updateDevLogPostReply(DevLogPostReplyPatchDto update, Long postId, Long replyId);
 
-    DevLogPostLikeDto toggleDevLogPostLike(DevLogPostLikePutDto toggleLike, Long postId);
+    DevLogPostLikeDto toggleDevLogPostLike(UUID userId, Long postId);
     DevLogPostLikeDto toggleDevLogPostReplyLike(DevLogPostLikePutDto toggleLike, Long postId, Long replyId);
 
     //Delete

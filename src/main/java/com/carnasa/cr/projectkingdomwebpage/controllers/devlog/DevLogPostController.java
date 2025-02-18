@@ -1,6 +1,7 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers.devlog;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.devlog.DevLogPost;
+import com.carnasa.cr.projectkingdomwebpage.exceptions.status.BadRequestException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.ForbiddenException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostPostDto;
@@ -63,17 +64,22 @@ public class DevLogPostController {
     }
 
     @PutMapping(DEV_LOG_POST_LIKES_URL)
-    public ResponseEntity<DevLogPostLikeDto> togglePostLike(@RequestBody DevLogPostLikePutDto like,
-                                                            @PathVariable Long id){
+    public ResponseEntity<DevLogPostLikeDto> togglePostLike(@PathVariable Long id){
         log.trace(PUT_ENDPOINT_LOG_HIT, DEV_LOG_POST_LIKES_URL);
-        DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostLike(like, id);
-        if(likeCheck==null){
-            log.info("Removing post like");
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // like is removed
+        try {
+            UUID userId = SecurityUtils.getCurrentUserId();
+            DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostLike(userId, id);
+            if (likeCheck == null) {
+                log.info("Removing post like");
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT); // like is removed
+            } else {
+                log.info("Adding post like");
+                return new ResponseEntity<>(likeCheck, HttpStatus.CREATED);
+            }
         }
-        else{
-            log.info("Adding post like");
-            return new ResponseEntity<>(likeCheck, HttpStatus.CREATED);
+        catch (RuntimeException e) {
+            log.warn("Error posting DevLog like with error: {}", e.getMessage());
+            throw new BadRequestException("Can not toggle post like, ERROR: " + e.getMessage());
         }
     }
 
