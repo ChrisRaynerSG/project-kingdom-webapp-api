@@ -1,9 +1,9 @@
 package com.carnasa.cr.projectkingdomwebpage.controllers.user;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.UserEntity;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserLoginDto;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.read.UserDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.create.UserLoginDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.create.UserPostDto;
 import com.carnasa.cr.projectkingdomwebpage.security.JwtUtils;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
 import com.carnasa.cr.projectkingdomwebpage.utils.UserUtils;
@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.carnasa.cr.projectkingdomwebpage.controllers.devlog.DevLogPostController.BASE_URL;
+import static com.carnasa.cr.projectkingdomwebpage.utils.UrlUtils.*;
 import static com.carnasa.cr.projectkingdomwebpage.utils.LoggingUtils.*;
 
 
@@ -64,6 +64,7 @@ public class LoginController {
             if(user.isPresent()){
                 String token = jwtUtils.generateToken(userCredentials.getUsername(), user.get().getRoles(), user.get().getId().toString());
                 log.info("User: {} Logged in successfully. Token: {}", userCredentials.getUsername(), token);
+                userService.userLoggedIn(userCredentials.getUsername());
                 return ResponseEntity.ok().body(Map.of("token", token));
             }
             else{

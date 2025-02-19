@@ -1,4 +1,4 @@
-package com.carnasa.cr.projectkingdomwebpage.models.user;
+package com.carnasa.cr.projectkingdomwebpage.models.user.create;
 
 public class UserLoginDto {
     private String username;

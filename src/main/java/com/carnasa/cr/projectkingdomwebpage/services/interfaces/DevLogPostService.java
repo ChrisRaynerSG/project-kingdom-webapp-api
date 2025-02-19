@@ -50,7 +50,7 @@ public interface DevLogPostService {
     DevLogPostReplyDto updateDevLogPostReply(DevLogPostReplyPatchDto update, Long postId, Long replyId);
 
     DevLogPostLikeDto toggleDevLogPostLike(UUID userId, Long postId);
-    DevLogPostLikeDto toggleDevLogPostReplyLike(DevLogPostLikePutDto toggleLike, Long postId, Long replyId);
+    DevLogPostLikeDto toggleDevLogPostReplyLike(UUID userId, Long postId, Long replyId);
 
     //Delete
     //@todo delete post, replies, categories

@@ -7,7 +7,6 @@ import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostLikeDto;
-import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostLikePutDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
@@ -24,20 +23,12 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.carnasa.cr.projectkingdomwebpage.utils.LoggingUtils.*;
+import static com.carnasa.cr.projectkingdomwebpage.utils.UrlUtils.*;
 
 @RestController
 public class DevLogPostController {
 
     public static Logger log = LoggerFactory.getLogger(DevLogPostController.class);
-
-    public static final String BASE_URL = "/api/v1/project-kingdom";
-    public static final String DEV_LOG_POST_URL = BASE_URL + "/devlogs";
-    public static final String DEV_LOG_POST_URL_ID = DEV_LOG_POST_URL + "/{id}";
-    public static final String DEV_LOG_POST_REPLY_URL = DEV_LOG_POST_URL_ID + "/replies";
-    public static final String DEV_LOG_POST_LIKES_URL = DEV_LOG_POST_URL_ID + "/likes";
-    public static final String DEV_LOG_POST_REPLY_URL_ID = DEV_LOG_POST_REPLY_URL + "/{reply}";
-    public static final String DEV_LOG_POST_REPLY_URL_ID_LIKES = DEV_LOG_POST_REPLY_URL_ID + "/likes";
-    public static final String DEV_LOG_POST_CATEGORY_URL = DEV_LOG_POST_URL + "/categories";
 
     private final DevLogPostService devLogPostService;
 
@@ -54,8 +45,14 @@ public class DevLogPostController {
         log.trace(POST_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL);
         try {
             UUID userId = SecurityUtils.getCurrentUserId();
-            DevLogPost devlogPost = devLogPostService.createDevLogPost(devlogPostPostDto, userId);
-            return new ResponseEntity<>(DevLogUtils.toDto(devlogPost), HttpStatus.CREATED);
+            if(SecurityUtils.hasDevLogPostPermission()) {
+                DevLogPost devlogPost = devLogPostService.createDevLogPost(devlogPostPostDto, userId);
+                return new ResponseEntity<>(DevLogUtils.toDto(devlogPost), HttpStatus.CREATED);
+            }
+            else{
+                log.info("User does not have permission to post DevLog post");
+                throw new ForbiddenException("You must be logged in with Developer Role to create a Dev Log Post");
+            }
         }
         catch (RuntimeException e) {
             log.warn("Error posting DevLog post with error: {}", e.getMessage());
@@ -64,11 +61,11 @@ public class DevLogPostController {
     }
 
     @PutMapping(DEV_LOG_POST_LIKES_URL)
-    public ResponseEntity<DevLogPostLikeDto> togglePostLike(@PathVariable Long id){
+    public ResponseEntity<DevLogPostLikeDto> togglePostLike(@PathVariable Long postId){
         log.trace(PUT_ENDPOINT_LOG_HIT, DEV_LOG_POST_LIKES_URL);
         try {
             UUID userId = SecurityUtils.getCurrentUserId();
-            DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostLike(userId, id);
+            DevLogPostLikeDto likeCheck = devLogPostService.toggleDevLogPostLike(userId, postId);
             if (likeCheck == null) {
                 log.info("Removing post like");
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT); // like is removed
@@ -84,7 +81,6 @@ public class DevLogPostController {
     }
 
     //Read
-
     /**
      *
      * @param pageSize nullable, defaults to 25, amount of results returned per page
@@ -97,7 +93,7 @@ public class DevLogPostController {
      * @param categoryName nullable - strict equals search to find all by specific category
      * @return a filtered list of DevLog posts
      */
-    @GetMapping(DEV_LOG_POST_URL)
+    @GetMapping(DEV_LOG_POST_URL) // this should be accessible to all
     public ResponseEntity<List<DevLogPostDto>> getDevLogPosts(
             @RequestParam(required = false) Integer pageSize,
             @RequestParam(required = false) Integer page,
@@ -119,32 +115,36 @@ public class DevLogPostController {
     }
 
     /**
-     * @param id the id of the post
+     * @param postId the id of the post
      * @return a JSON object containing information on a single post
      */
     @GetMapping(DEV_LOG_POST_URL_ID)
-    public ResponseEntity<DevLogPostDto> getDevLogPostById(@PathVariable Long id) {
+    public ResponseEntity<DevLogPostDto> getDevLogPostById(@PathVariable Long postId) {
         log.trace(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_ID);
-        if(devLogPostService.getDevLogPostByIdDto(id).isEmpty()) {
-            throw new NotFoundException("No posts found with id " + id);
+        if(devLogPostService.getDevLogPostByIdDto(postId).isEmpty()) {
+            throw new NotFoundException("No posts found with id " + postId);
         }
-        return new ResponseEntity<>(devLogPostService.getDevLogPostByIdDto(id).get(),HttpStatus.OK);
+        return new ResponseEntity<>(devLogPostService.getDevLogPostByIdDto(postId).get(),HttpStatus.OK);
     }
 
     @GetMapping(DEV_LOG_POST_LIKES_URL)
     public ResponseEntity<List<DevLogPostLikeDto>> getPostReplyLikes(@RequestParam(required = false) Integer page,
                                                                      @RequestParam(required = false) Integer size,
-                                                                     @PathVariable Long id){
+                                                                     @PathVariable Long postId){
         log.trace(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_LIKES_URL);
-        return new ResponseEntity<>(devLogPostService.getPostLikes(id,page,size).getContent(), HttpStatus.OK);
+        return new ResponseEntity<>(devLogPostService.getPostLikes(postId,page,size).getContent(), HttpStatus.OK);
     }
 
     //Update
 
     @PatchMapping(DEV_LOG_POST_URL_ID)
-    public ResponseEntity<DevLogPostDto> patchDevLogPost(@RequestBody DevLogPostPatchDto update, @PathVariable Long id) {
+    public ResponseEntity<DevLogPostDto> patchDevLogPost(@RequestBody DevLogPostPatchDto update, @PathVariable Long postId) {
         log.trace(PATCH_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_ID);
-        DevLogPostDto updatedPost = devLogPostService.updateDevLogPost(update, id);
+
+        UUID userID = SecurityUtils.getCurrentUserId();
+
+        DevLogPostDto updatedPost = devLogPostService.updateDevLogPost(update, postId);
+
         if(updatedPost==null){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
@@ -154,9 +154,10 @@ public class DevLogPostController {
     //Delete
 
     @DeleteMapping(DEV_LOG_POST_URL_ID)
-    public ResponseEntity<DevLogPostDto> deleteDevLogPostById(@PathVariable Long id) {
+    public ResponseEntity<DevLogPostDto> deleteDevLogPostById(@PathVariable Long postId) {
         log.trace(DELETE_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_ID);
-        devLogPostService.deletePost(id);
+
+        devLogPostService.deletePost(postId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

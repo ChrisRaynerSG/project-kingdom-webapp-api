@@ -141,4 +141,5 @@ public class UserContactDetails {
     public void setCountry(String country) {
         this.country = country;
     }
+
 }

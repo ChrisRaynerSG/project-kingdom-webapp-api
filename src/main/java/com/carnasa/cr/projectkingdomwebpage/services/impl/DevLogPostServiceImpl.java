@@ -604,22 +604,22 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         }
     }
     /**
-     * @param toggleLike DevLogPostLikePutDto object containing userId (if null will throw exception)
+     * @param userId UUID of current logged in user
      * @param postId id of parent post for reply
      * @param replyId id of reply to be liked
      * @return null if like already exists as like is removed, DevLogPostLikeDto object containing username and createdAt timestamp
      */
     @Override
-    public DevLogPostLikeDto toggleDevLogPostReplyLike(DevLogPostLikePutDto toggleLike, Long postId, Long replyId) {
+    public DevLogPostLikeDto toggleDevLogPostReplyLike(UUID userId, Long postId, Long replyId) {
 
         log.trace("Attempting to update like status for reply with ID: {} ", postId);
 
-        if(toggleLike.getUserId() == null){
+        if(userId == null){
             log.warn("No user provided to toggle like status for reply with ID: {}", postId);
             throw new BadRequestException("User id is required to toggle like status.");
         }
-        if(userService.getUserById(toggleLike.getUserId()).isEmpty()) {
-            log.warn("No User found for ID: {}", toggleLike.getUserId());
+        if(userService.getUserById(userId).isEmpty()) {
+            log.warn("No User found for ID: {}", userId);
             throw new BadRequestException("Unable to like as user information unable to be retrieved");
         }
         if(getDevLogPostById(postId).isEmpty()) {
@@ -631,12 +631,12 @@ public class DevLogPostServiceImpl implements DevLogPostService {
             throw new BadRequestException("Unable to like as reply information unable to be retrieved");
         }
 
-        Optional<DevLogPostReplyLike> likeCheck = devLogPostReplyLikeRepository.findByUserIdAndReplyId(toggleLike.getUserId(), replyId);
+        Optional<DevLogPostReplyLike> likeCheck = devLogPostReplyLikeRepository.findByUserIdAndReplyId(userId, replyId);
         if(likeCheck.isPresent()) {
             try {
-                log.info("Attempting to delete like for reply with ID: {} for user with ID: {}", replyId, toggleLike.getUserId());
+                log.info("Attempting to delete like for reply with ID: {} for user with ID: {}", replyId, userId);
                 devLogPostReplyLikeRepository.delete(likeCheck.get());
-                log.info("Like successfully added for reply with ID: {} for user with ID: {}", replyId, toggleLike.getUserId());
+                log.info("Like successfully added for reply with ID: {} for user with ID: {}", replyId, userId);
                 return null;
             }
             catch(Exception e){
@@ -646,19 +646,19 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         }
         else {
             try {
-                log.info("Attempting to create like for reply with ID: {} for user with ID: {}", replyId, toggleLike.getUserId());
+                log.info("Attempting to create like for reply with ID: {} for user with ID: {}", replyId, userId);
                 DevLogPostReplyLike like = new DevLogPostReplyLike();
                 like.setActive(true);
                 like.setCreated(LocalDateTime.now());
                 like.setLastModified(LocalDateTime.now());
-                like.setUser(userService.getUserById(toggleLike.getUserId()).get());
+                like.setUser(userService.getUserById(userId).get());
                 like.setReply(getDevLogPostReplyById(replyId).get());
                 like = devLogPostReplyLikeRepository.save(like);
-                log.info("Like successfully added for reply with ID: {} for user with ID: {}", replyId, toggleLike.getUserId());
+                log.info("Like successfully added for reply with ID: {} for user with ID: {}", replyId, userId);
                 return DevLogUtils.toDto(like);
             }
             catch(Exception e){
-                log.error("Unable to save like for reply with ID: {} for user with ID: {}", replyId, toggleLike.getUserId());
+                log.error("Unable to save like for reply with ID: {} for user with ID: {}", replyId, userId);
                 throw new BadRequestException("Unable to savd like for reply with ID: " + replyId);
             }
         }

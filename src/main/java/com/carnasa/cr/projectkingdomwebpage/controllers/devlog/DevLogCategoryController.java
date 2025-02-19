@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.carnasa.cr.projectkingdomwebpage.controllers.devlog.DevLogPostController.*;
 import static com.carnasa.cr.projectkingdomwebpage.utils.LoggingUtils.*;
+import static com.carnasa.cr.projectkingdomwebpage.utils.UrlUtils.*;
 
 @RestController
 public class DevLogCategoryController {

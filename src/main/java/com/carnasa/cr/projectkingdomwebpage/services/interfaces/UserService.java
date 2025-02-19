@@ -1,11 +1,11 @@
 package com.carnasa.cr.projectkingdomwebpage.services.interfaces;
 
 import com.carnasa.cr.projectkingdomwebpage.entities.user.*;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.read.UserDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.update.UserPatchDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.create.UserPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.update.UserRolePatchDto;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,7 +19,7 @@ public interface UserService {
     Optional<UserDto> getUserDtoById(UUID userId);
     Optional<UserEntity> getByUsername(String username);
 
-    Page<UserDto> getAllUsers(Integer pageSize,
+    Page<UserEntity> getAllUsers(Integer pageSize,
                                  Integer page,
                                  String username,
                                  Boolean active);
@@ -29,8 +29,9 @@ public interface UserService {
 
     //Update Methods
     UserEntity updateUser(UserPatchDto userPatchDto, UUID userId);
+    UserDto patchUserRoles(UUID userId, UserRolePatchDto userPatchDto);
+    void userLoggedIn(String username);
 
     //Delete Methods
     void deleteUser(UUID userId);
-
 }

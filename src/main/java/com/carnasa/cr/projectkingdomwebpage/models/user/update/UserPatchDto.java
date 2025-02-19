@@ -1,4 +1,4 @@
-package com.carnasa.cr.projectkingdomwebpage.models.user;
+package com.carnasa.cr.projectkingdomwebpage.models.user.update;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -6,7 +6,6 @@ import java.util.Set;
 
 public class UserPatchDto {
 
-    private String password;
     private String avatar;
     private Set<String> roles;
     private LocalDateTime lastLogin;
@@ -33,14 +32,6 @@ public class UserPatchDto {
     private String steamUrl;
     private String discordName;
     private Boolean darkMode;
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
     public String getAvatar() {
         return avatar;

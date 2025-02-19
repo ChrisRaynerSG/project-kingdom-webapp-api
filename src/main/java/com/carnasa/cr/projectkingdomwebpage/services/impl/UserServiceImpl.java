@@ -4,9 +4,10 @@ import com.carnasa.cr.projectkingdomwebpage.entities.user.*;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.BadRequestException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.exceptions.status.ConflictException;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserDto;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserPatchDto;
-import com.carnasa.cr.projectkingdomwebpage.models.user.UserPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.read.UserDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.update.UserPatchDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.create.UserPostDto;
+import com.carnasa.cr.projectkingdomwebpage.models.user.update.UserRolePatchDto;
 import com.carnasa.cr.projectkingdomwebpage.repositories.specifications.UserSpecification;
 import com.carnasa.cr.projectkingdomwebpage.repositories.user.*;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService;
@@ -14,6 +15,8 @@ import com.carnasa.cr.projectkingdomwebpage.utils.ServiceUtils;
 import com.carnasa.cr.projectkingdomwebpage.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +31,8 @@ import java.util.function.Consumer;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    public static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserEntityRepository userEntityRepository;
     private final UserExtraRepository userExtraRepository;
@@ -50,7 +55,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public Optional<UserEntity> getUserById(UUID userId) {
         return userEntityRepository.findById(userId);
     }
@@ -78,32 +82,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDto> getAllUsers(Integer pageSize, Integer page, String username, Boolean active) {
+    public Page<UserEntity> getAllUsers(Integer pageSize, Integer page, String username, Boolean active) {
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, pageSize);
-//        if(username != null){
-//            if (active != null) {
-//                if(active){
-//                    return userEntityRepository.findAllByActiveTrueAndUsernameContainingIgnoreCase(username,pageRequest).map(UserUtils::toDto);
-//                }
-//                else {
-//                    return userEntityRepository.findAllByActiveFalseAndUsernameContainingIgnoreCase(username, pageRequest).map(UserUtils::toDto);
-//                }
-//            }
-//            return userEntityRepository.findAllByUsernameContainingIgnoreCase(username,pageRequest).map(UserUtils::toDto);
-//        }
-//        if(active != null){
-//            if(active){
-//                return userEntityRepository.findAllByActiveTrue(pageRequest).map(UserUtils::toDto);
-//            }
-//            else {
-//                return userEntityRepository.findAllByActiveFalse(pageRequest).map(UserUtils::toDto);
-//            }
-//        }
-
         Specification<UserEntity> spec = Specification.where(UserSpecification.getUserByActive(active)).and(UserSpecification.getUserByUsername(username));
-
-        //If no request parameters just return the whole search
-        return userEntityRepository.findAll(spec, pageRequest).map(UserUtils::toDto);
+        return userEntityRepository.findAll(spec, pageRequest);
     }
 
     @Override
@@ -164,7 +146,6 @@ public class UserServiceImpl implements UserService {
         boolean socialLinksUpdated = false;
 
         userUpdated |= updateField(userPatchDto.getActive(), userEntity::setActive);
-        userUpdated |= updateField(userPatchDto.getPassword(), password -> userEntity.setPassword(passwordEncoder.encode(password)));
 
         userExtraUpdated |= updateField(userPatchDto.getFirstName(), userExtra::setFirstName);
         userExtraUpdated |= updateField(userPatchDto.getLastName(), userExtra::setLastName);
@@ -307,5 +288,81 @@ public class UserServiceImpl implements UserService {
         userPreferences.setCreatedAt(LocalDateTime.now());
         userPreferences.setLastModified(LocalDateTime.now());
         return userPreferencesRepository.saveAndFlush(userPreferences);
+    }
+
+    /**
+     * @param userId id of user to be patched
+     * @param userPatchDto Dto Object containing nullable fields of isAdmin, isDeveloper, isModerator
+     * @return UserDto containing information on user that was updated
+     * @throws NotFoundException if user not found
+     */
+    @Override
+    public UserDto patchUserRoles(UUID userId, UserRolePatchDto userPatchDto) {
+
+        log.info("Entered UserService.patchUserRoles()");
+        Optional<UserEntity> userEntityOptional = getUserById(userId);
+
+        boolean userUpdated = false;
+
+        if (userEntityOptional.isEmpty()) {
+            log.error("User with ID: " + userId + " not found");
+            throw new NotFoundException("User with ID " + userId + " not found");
+        }
+        UserEntity userEntity = userEntityOptional.get();
+
+        if(userPatchDto.getAdmin()!= null){
+            log.debug("User admin role changed");
+            if(userPatchDto.getAdmin()){
+                userEntity.getRoles().add("ROLE_ADMIN");
+            }
+            else{
+                userEntity.getRoles().remove("ROLE_ADMIN");
+            }
+            userUpdated = true;
+        }
+        if(userPatchDto.getDeveloper()!= null){
+            log.debug("User developer role changed");
+            if(userPatchDto.getDeveloper()){
+                userEntity.getRoles().add("ROLE_DEVELOPER");
+            }
+            else{
+                userEntity.getRoles().remove("ROLE_DEVELOPER");
+            }
+        }
+        if(userPatchDto.getModerator()!= null){
+            log.debug("User moderator role changed");
+            if(userPatchDto.getModerator()){
+                userEntity.getRoles().add("ROLE_MODERATOR");
+            }
+            else{
+                userEntity.getRoles().remove("ROLE_MODERATOR");
+            }
+        }
+
+        if(userUpdated){
+            log.info("Attempting to save updated user roles to database");
+            userEntity.setLastModified(LocalDateTime.now());
+            try {
+                UserDto user = UserUtils.toDto(userEntityRepository.save(userEntity));
+                log.info("Successfully saved updated user roles to database");
+                return user;
+            }
+            catch(Exception e){
+                log.error("Failed to save updated user roles to database with error message: {}", e.getMessage());
+            }
+        }
+        return null;
+    }
+    /**
+     * Method to set last login time of user when they log in to the web app
+     * @param username username of user logging in
+     */
+    @Override
+    public void userLoggedIn(String username) {
+        log.info("Entered UserService.userLoggedIn()");
+        UserEntity user = getUserByUsername(username).orElseThrow(()->new NotFoundException("User: " + username + " not found"));
+        user.setLastLogin(LocalDateTime.now());
+        userEntityRepository.save(user);
+        log.info("Saved last login for user: {} at {}", username, user.getLastLogin());
     }
 }
