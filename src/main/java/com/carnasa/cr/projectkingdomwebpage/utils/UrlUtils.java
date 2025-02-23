@@ -16,6 +16,7 @@ public class UrlUtils {
     public static final String DEV_LOG_POST_REPLY_URL_ID = DEV_LOG_POST_REPLY_URL + "/{replyId}";
     public static final String DEV_LOG_POST_REPLY_URL_ID_LIKES = DEV_LOG_POST_REPLY_URL_ID + "/likes";
     public static final String DEV_LOG_POST_CATEGORY_URL = DEV_LOG_POST_URL + "/categories";
+    public static final String DEV_LOG_POST_URL_LATEST = DEV_LOG_POST_URL + "/latest";
 
     public static final String USER_URI = BASE_URL + "/users";
     public static final String USER_URI_ID = USER_URI + "/{id}";

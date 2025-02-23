@@ -414,6 +414,14 @@ public class DevLogPostServiceImpl implements DevLogPostService {
         log.info("Retrieved all likes for reply: {}", replyId);
         return likes;
     }
+    
+    public Optional<DevLogPostDto> getLatestPost(){
+        return devLogPostRepository.findFirstByOrderByCreatedAtDesc().map(DevLogUtils::toDto);
+    }
+    
+    
+    //Update
+    
     /**
      * @param update DevLogPostPatchDto containing optional fields of CategoryId, message, title, active. If field is null update for that part is ignored.
      * @param postId id of post to update

@@ -78,18 +78,18 @@ public class DevLogReplyController {
      * @return list of all replies for a specific post
      */
     @GetMapping(DEV_LOG_POST_REPLY_URL)
-    public ResponseEntity<List<DevLogPostReplyDto>> getDevLogPostReply(@PathVariable Long postId,
+    public ResponseEntity<Page<DevLogPostReplyDto>> getDevLogPostReply(@PathVariable Long postId,
                                                                        @RequestParam(required = false) Integer page,
                                                                        @RequestParam(required = false) Integer size,
                                                                        @RequestParam(required = false) String search,
                                                                        @RequestParam(required = false) LocalDateTime startDate,
                                                                        @RequestParam(required = false) LocalDateTime endDate) {
-        log.trace(GET_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL);
+        log.info(GET_ENDPOINT_LOG_HIT,DEV_LOG_POST_REPLY_URL);
         Page<DevLogPostReplyDto> replies = devLogPostService.getPostReplies(page,size,postId,search,startDate,endDate);
         if(replies.isEmpty()) {
             throw new NotFoundException("No replies found for post with ID: " + postId);
         }
-        return new ResponseEntity<>(replies.getContent(), HttpStatus.OK);
+        return new ResponseEntity<>(replies, HttpStatus.OK);
     }
 
     @GetMapping(DEV_LOG_POST_REPLY_URL_ID)

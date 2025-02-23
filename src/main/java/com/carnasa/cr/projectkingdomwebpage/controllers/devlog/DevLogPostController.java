@@ -7,6 +7,7 @@ import com.carnasa.cr.projectkingdomwebpage.exceptions.status.NotFoundException;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.create.DevLogPostPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostLikeDto;
+import com.carnasa.cr.projectkingdomwebpage.models.devlog.read.DevLogPostReplyDto;
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostPatchDto;
 import com.carnasa.cr.projectkingdomwebpage.services.interfaces.DevLogPostService;
 import com.carnasa.cr.projectkingdomwebpage.utils.DevLogUtils;
@@ -133,6 +134,15 @@ public class DevLogPostController {
                                                                      @PathVariable Long postId){
         log.trace(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_LIKES_URL);
         return new ResponseEntity<>(devLogPostService.getPostLikes(postId,page,size).getContent(), HttpStatus.OK);
+    }
+
+    @GetMapping(DEV_LOG_POST_URL_LATEST)
+    public ResponseEntity<DevLogPostDto> getLatestDevLogPost(){
+        log.info(GET_ENDPOINT_LOG_HIT, DEV_LOG_POST_URL_LATEST);
+        if(devLogPostService.getLatestPost().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(devLogPostService.getLatestPost().get(),HttpStatus.OK);
     }
 
     //Update

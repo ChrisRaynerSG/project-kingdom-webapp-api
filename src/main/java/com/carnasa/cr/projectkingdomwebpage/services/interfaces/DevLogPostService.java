@@ -16,6 +16,7 @@ import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostPatch
 import com.carnasa.cr.projectkingdomwebpage.models.devlog.update.DevLogPostReplyPatchDto;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +44,8 @@ public interface DevLogPostService {
 
     Page<DevLogPostLikeDto> getPostLikes(Long id, Integer page, Integer size);
     Page<DevLogPostLikeDto> getReplyLikes(Long id, Integer page, Integer size);
+
+    Optional<DevLogPostDto> getLatestPost();
 
     //Update
     DevLogPostDto updateDevLogPost(DevLogPostPatchDto update, Long postId);

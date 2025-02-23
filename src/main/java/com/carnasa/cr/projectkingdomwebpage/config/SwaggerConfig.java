@@ -9,6 +9,14 @@ import org.springframework.context.annotation.Configuration;
 
 import io.swagger.v3.oas.models.info.Info;
 
+/**
+ * SwaggerConfig is a configuration class for setting up Swagger/OpenAPI documentation.
+ * It defines a bean to customize the OpenAPI configuration, including API metadata,
+ * security schemes, and global security requirements.
+ *
+ * The configuration is used for generating API documentation and enabling interactive
+ * API exploration via Swagger-UI or compatible tools.
+ */
 @Configuration
 public class SwaggerConfig {
 

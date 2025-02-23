@@ -29,9 +29,30 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+/**
+ * This class, UserServiceImpl, implements the UserService interface and provides
+ * functionality for managing user-related operations in the system, such as retrieving,
+ * saving, updating, and deleting user entities and their associated data. The class
+ * interacts with various repositories to perform database operations and handle
+ * validation and encoding for user data.
+ *
+ * This implementation aims to provide a comprehensive set of services for user management,
+ * including support for user roles, preferences, and contact details, as well as ensuring
+ * secure handling of sensitive data such as passwords.
+ *
+ * @author Christopher Rayner
+ * @version 1.0
+ * @see com.carnasa.cr.projectkingdomwebpage.services.interfaces.UserService
+ */
 @Service
 public class UserServiceImpl implements UserService {
 
+    /**
+     * Logger instance used for logging messages and events related to the UserServiceImpl class.
+     * It provides a standardized mechanism to record application behavior, debug information,
+     * errors, and other significant runtime details. The logger is created using LoggerFactory
+     * specific to the UserServiceImpl class.
+     */
     public static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserEntityRepository userEntityRepository;
@@ -41,6 +62,17 @@ public class UserServiceImpl implements UserService {
     private final UserSocialsRepository userSocialsRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Constructs an instance of UserServiceImpl by injecting the required repositories
+     * and password encoder.
+     *
+     * @param userEntityRepository the repository for managing user entities.
+     * @param userExtraRepository the repository for managing user extra details.
+     * @param userContactDetailsRepository the repository for managing user contact details.
+     * @param userPreferencesRepository the repository for managing user preferences.
+     * @param userSocialsRepository the repository for managing user social information.
+     * @param passwordEncoder the encoder for encoding user passwords.
+     */
     @Autowired
     public UserServiceImpl(UserEntityRepository userEntityRepository, UserExtraRepository userExtraRepository,
                            UserContactDetailsRepository userContactDetailsRepository, UserPreferencesRepository userPreferencesRepository,
@@ -54,20 +86,44 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Retrieves a user entity by its unique identifier.
+     *
+     * @param userId the unique identifier of the user to be retrieved
+     * @return an Optional containing the UserEntity if found, or an empty Optional if not found
+     */
     @Override
     public Optional<UserEntity> getUserById(UUID userId) {
         return userEntityRepository.findById(userId);
     }
 
+    /**
+     * Retrieves the UserDto object corresponding to the provided user ID.
+     *
+     * @param userId the unique identifier of the user to retrieve
+     * @return an Optional containing the UserDto if found, or an empty Optional if the user does not exist
+     */
     @Override
     public Optional<UserDto> getUserDtoById(UUID userId) {
         return getUserById(userId).map(UserUtils::toDto);
     }
 
+    /**
+     * Retrieves a user entity by their email address.
+     *
+     * @param email the email address of the user to fetch
+     * @return an Optional containing the UserEntity if found, or an empty Optional otherwise
+     */
     private Optional<UserEntity> getUserByEmail(String email) {
         return userEntityRepository.findByEmail(email);
     }
 
+    /**
+     * Retrieves a user entity based on the provided username.
+     *
+     * @param username the username of the user to retrieve; must not be null or empty
+     * @return an Optional containing the UserEntity if found, or an empty Optional if no user exists with the given username
+     */
     private Optional<UserEntity> getUserByUsername(String username) {
         return userEntityRepository.findByUsername(username);
     }
@@ -75,12 +131,26 @@ public class UserServiceImpl implements UserService {
     private Optional<UserExtra> getUserExtraByUserId(UUID userId) {
         return getUserById(userId).map(UserEntity::getUserExtra);
     }
-
+    /**
+     * Retrieves a UserEntity by its username.
+     *
+     * @param username the username of the user to retrieve; must not be null or empty.
+     * @return an Optional containing the UserEntity if found, or an empty Optional if no user with the given username exists.
+     */
     @Override
     public Optional<UserEntity> getByUsername(String username) {
         return userEntityRepository.findByUsername(username);
     }
 
+    /**
+     * Retrieves a paginated list of users based on the specified parameters.
+     *
+     * @param pageSize the number of users to return per page
+     * @param page the current page number (0-based index)
+     * @param username the username to filter the users by; can be null to include all usernames
+     * @param active the status to filter users by; true for active users, false for inactive users, or null to include both
+     * @return a Page object containing a list of UserEntity objects matching the specified criteria
+     */
     @Override
     public Page<UserEntity> getAllUsers(Integer pageSize, Integer page, String username, Boolean active) {
         PageRequest pageRequest = ServiceUtils.buildPageRequest(page, pageSize);
@@ -88,6 +158,14 @@ public class UserServiceImpl implements UserService {
         return userEntityRepository.findAll(spec, pageRequest);
     }
 
+    /**
+     * Saves a new user based on the provided user details. This method performs
+     * validation, encrypts the user's password, and persists the user entity in the database.
+     *
+     * @param userDto Data transfer object containing user details such as username, email, password, and confirmPassword.
+     * @return The saved UserEntity object representing the newly created user.
+     * @throws BadRequestException If the passwords do not match or the provided email is invalid.
+     */
     @Override
     @Transactional
     public UserEntity saveUser(UserPostDto userDto) {
@@ -125,7 +203,16 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("INVALID EMAIL: " + userDto.getEmail().toLowerCase() + " Please enter a valid email address");
         }
     }
-
+    /**
+     * Updates the details of an existing user based on the provided patch data and user ID.
+     * The method updates various properties of the user entity, including personal information,
+     * contact details, preferences, and social links, and persists the changes to the database.
+     *
+     * @param userPatchDto the data transfer object containing the updated fields for the user
+     * @param userId the unique identifier of the user to be updated
+     * @return the updated UserEntity after saving the changes to the database
+     * @throws NotFoundException if no user is found with the specified userId
+     */
     @Override
     @Transactional
     public UserEntity updateUser(UserPatchDto userPatchDto, UUID userId) {
@@ -198,6 +285,13 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    /**
+     * Deletes the user with the specified ID along with all related entities.
+     *
+     * @param userId the unique identifier of the user to delete
+     * @throws NotFoundException if the user with the specified ID is not found
+     * @throws RuntimeException if there is an error during the deletion process
+     */
     @Override
     @Transactional
     public void deleteUser(UUID userId) {
@@ -227,6 +321,14 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Validates a new user entity by checking if the username or email already exists
+     * in the database and ensures that the fields are acceptable to be saved.
+     *
+     * @param userEntity the user entity being validated, containing user details such
+     *                   as username and email
+     * @throws ConflictException if the username or email already exists in the database
+     */
     private void validateNewUser(UserEntity userEntity){
 
         // first check to see if username or email already exists in the database
@@ -239,7 +341,13 @@ public class UserServiceImpl implements UserService {
         //then validate fields to make sure they are acceptable to be saved
         //@Todo remove todos
     }
-
+    /**
+     * Creates and initializes a new UserExtra entity associated with the given UserEntity.
+     * This method also sets up default UserPreferences, UserSocials, and UserContactDetails
+     * for the created UserExtra entity.
+     *
+     * @param user the UserEntity for which the UserExtra entity is being created and associated
+     */
     private void createNewUserExtra(UserEntity user){
         UserExtra userExtra = new UserExtra();
 
@@ -265,7 +373,12 @@ public class UserServiceImpl implements UserService {
 
         userExtraRepository.saveAndFlush(userExtra);
     }
-
+    /**
+     * Creates and saves a new UserContactDetails instance based on the provided UserExtra details.
+     *
+     * @param userExtra an instance of UserExtra containing the user's additional details.
+     * @return the saved UserContactDetails instance.
+     */
     private UserContactDetails createNewUserContactDetails(UserExtra userExtra) {
         UserContactDetails userContactDetails = new UserContactDetails();
         userContactDetails.setUserExtra(userExtra);
@@ -274,6 +387,13 @@ public class UserServiceImpl implements UserService {
         return userContactDetailsRepository.saveAndFlush(userContactDetails);
 
     }
+    /**
+     * Creates a new UserSocials entity, associates it with the given UserExtra entity,
+     * sets the creation and last modified timestamps, and persists the entity in the database.
+     *
+     * @param userExtra the UserExtra entity to associate with the new UserSocials entity
+     * @return the newly created and persisted UserSocials entity
+     */
     private UserSocials createNewUserSocials(UserExtra userExtra) {
         UserSocials userSocials = new UserSocials();
         userSocials.setUserExtra(userExtra);
@@ -282,6 +402,12 @@ public class UserServiceImpl implements UserService {
         return userSocialsRepository.saveAndFlush(userSocials);
 
     }
+    /**
+     * Creates and saves a new UserPreferences object based on the provided UserExtra data.
+     *
+     * @param userExtra the UserExtra object containing additional user-related information
+     * @return the newly created and saved UserPreferences object
+     */
     private UserPreferences createNewUserPreferences(UserExtra userExtra) {
         UserPreferences userPreferences = new UserPreferences();
         userPreferences.setUserExtra(userExtra);
